@@ -50,8 +50,6 @@ var node = function(x,y) {
 "while"					{ return('WHILE'); }
 
 
-[-\+]?[0-9]+			{ return 'CONSTANT'; }
-
 [a-zA-Z_][a-zA-Z1-9]* 	{ return "IDENTIFIER";}
 
 \"(\\.|[^\\"])*\"		{ return 'STRING'; }
@@ -102,6 +100,8 @@ var node = function(x,y) {
 "^"					{ return '^'; }
 "|"					{ return '|'; }
 "?"					{ return '?'; }
+
+[-\+]?[0-9]+			{ return 'CONSTANT'; }
 
 \s+				;
 .					{ /* discard bad characters */ }
@@ -515,7 +515,7 @@ iteration_statement
 
 
 jump_statement
-	: CONTINUE ';' {$$ = new node('jmpstmt',[new node('', 'continue'),new node('', ';')]);}
+	: CONTINUE ';' {$$ = new node('jmpstmt',	[new node('', 'continue'),new node('', ';')]);}
 	| BREAK ';' 	{$$ = new node('jmpstmt',[new node('', 'break'),new node('', ';')]);}
 	| RETURN ';' 	{$$ = new node('jmpstmt',[new node('', 'return'),new node('', ';')]);}
 	| RETURN expression ';' 	{var list = [new node('', 'return')].concat($2);
@@ -525,7 +525,9 @@ jump_statement
 
 translation_unit
 	: external_declaration {//sTree = $1;}
-		comment($1);}
+		syntaxTree = $1;
+		return $1;
+		}
 	;
 
 external_declaration

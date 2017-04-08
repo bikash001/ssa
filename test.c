@@ -15,9 +15,9 @@ int main(int a)
 		b = 10;
 	}
 
-	while (a < b) {
-		a = a+b*b;
-		b = b/5;
+	while (i<= 10) {
+		i = i+a;
+		x = a+b;
 	}
 	printf("%d\n", a+b);
 	return 0;
