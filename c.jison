@@ -1,3 +1,10 @@
+%{
+var node = function(x,y) {
+	this.type = x;
+	this.val = y;
+};
+%}
+
 %lex
 
 %%
@@ -24,7 +31,7 @@
 "goto"					{ return('GOTO'); }
 "if"					{ return('IF'); }
 "inline"				{ return('INLINE'); }
-'int'					{ comment('int'); return('INT'); }
+'int'					{ return('INT'); }
 "long"					{ return('LONG'); }
 "register"				{ return('REGISTER'); }
 "restrict"				{ return('RESTRICT'); }
@@ -43,9 +50,9 @@
 "while"					{ return('WHILE'); }
 
 
-[0-9]+			{ return 'CONSTANT'; }
+[-\+]?[0-9]+			{ return 'CONSTANT'; }
 
-[a-zA-Z_][a-zA-Z1-9]* 	{comment('identifier'); return "IDENTIFIER";}
+[a-zA-Z_][a-zA-Z1-9]* 	{ return "IDENTIFIER";}
 
 \"(\\.|[^\\"])*\"		{ return 'STRING'; }
 
@@ -120,16 +127,20 @@
 %%
 
 primary_expression
-	: IDENTIFIER
-	| CONSTANT
-	| STRING
-	| '(' expression ')'
+	: IDENTIFIER {$$ = [new node('id',yytext)];}
+	| CONSTANT 	{$$ = [new node('const',parseInt(yytext))];}
+	| STRING 	{$$ = [new node('str',yytext)];}
+	| '(' expression ')' 	{
+		var list = [new node('br','(')].concat($2);
+		list.push(new node('br',')'));
+		$$ = list;}
 	;
 
 postfix_expression
-	: primary_expression
+	: primary_expression 	{$$ = $1;}
 	| postfix_expression '[' expression ']'
-	| postfix_expression '(' ')'
+	| postfix_expression '(' ')' 	{$1.push(new node('br','('));
+									$1.push(new node('br','('));}
 	| postfix_expression '(' argument_expression_list ')'
 	| postfix_expression '.' IDENTIFIER
 	| postfix_expression PTR_OP IDENTIFIER
@@ -138,12 +149,13 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression
-	| argument_expression_list ',' assignment_expression
+	: assignment_expression 	{$$ = $1;}
+	| argument_expression_list ',' assignment_expression 	{$1.push(new node("",','));
+															$$ = $1.concat($3);}
 	;
 
 unary_expression
-	: postfix_expression
+	: postfix_expression 	{$$ = $1;}
 	| INC_OP unary_expression
 	| DEC_OP unary_expression
 	| unary_operator cast_expression
@@ -161,129 +173,160 @@ unary_operator
 	;
 
 cast_expression
-	: unary_expression
+	: unary_expression	{$$ = $1;}
 	| '(' type_name ')' cast_expression
 	;
 
 multiplicative_expression
-	: cast_expression
-	| multiplicative_expression '*' cast_expression
-	| multiplicative_expression '/' cast_expression
-	| multiplicative_expression '%' cast_expression
+	: cast_expression 	{$$ = $1;}
+	| multiplicative_expression '*' cast_expression 	{$1.push(new node('op', '*'));
+														$$ = $1.concat($3);}
+	| multiplicative_expression '/' cast_expression 	{$1.push(new node('op', '/'));
+														$$ = $1.concat($3);}
+	| multiplicative_expression '%' cast_expression 	{$1.push(new node('op', '%'));
+														$$ = $1.concat($3);}
 	;
 
 additive_expression
-	: multiplicative_expression
-	| additive_expression '+' multiplicative_expression
-	| additive_expression '-' multiplicative_expression
+	: multiplicative_expression {$$ = $1;}
+	| additive_expression '+' multiplicative_expression 	{$1.push(new node('op', '+'));
+															$$ = $1.concat($3);}
+	| additive_expression '-' multiplicative_expression 	{$1.push(new node('op', '-'));
+															$$ = $1.concat($3);}
 	;
 
 shift_expression
-	: additive_expression
-	| shift_expression LEFT_OP additive_expression
-	| shift_expression RIGHT_OP additive_expression
+	: additive_expression {$$ = $1;}
+	| shift_expression LEFT_OP additive_expression 		{$1.push(new node('op', $2));
+														$$ = $1.concat($3);}
+	| shift_expression RIGHT_OP additive_expression 	{$1.push(new node('op', $2));
+														$$ = $1.concat($3);}
 	;
 
 relational_expression
-	: shift_expression
-	| relational_expression '<' shift_expression
-	| relational_expression '>' shift_expression
-	| relational_expression LE_OP shift_expression
-	| relational_expression GE_OP shift_expression
+	: shift_expression 	{$$ = $1;}
+	| relational_expression '<' shift_expression 	{$1.push(new node('op', '<'));
+														$$ = $1.concat($3);}
+	| relational_expression '>' shift_expression 	{$1.push(new node('op', '>'));
+														$$ = $1.concat($3);}
+	| relational_expression LE_OP shift_expression 	{$1.push(new node('op', $2));
+														$$ = $1.concat($3);}
+	| relational_expression GE_OP shift_expression 	{$1.push(new node('op', $2));
+														$$ = $1.concat($3);}
 	;
 
 equality_expression
-	: relational_expression
-	| equality_expression EQ_OP relational_expression
-	| equality_expression NE_OP relational_expression
+	: relational_expression 	{$$ = $1;}
+	| equality_expression EQ_OP relational_expression 	{$1.push(new node('op', $2));
+														$$ = $1.concat($3);}
+	| equality_expression NE_OP relational_expression 	{$1.push(new node('op', $2));
+														$$ = $1.concat($3);}
 	;
 
 and_expression
-	: equality_expression
-	| and_expression '&' equality_expression
+	: equality_expression 	{$$ = $1;}
+	| and_expression '&' equality_expression 	{$1.push(new node('op', '&'));
+											$$ = $1.concat($3);}
 	;
 
 exclusive_or_expression
-	: and_expression
-	| exclusive_or_expression '^' and_expression
+	: and_expression 	{$$ = $1;}
+	| exclusive_or_expression '^' and_expression 	{$1.push(new node('op', '^'));
+														$$ = $1.concat($3);}
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression
-	| inclusive_or_expression '|' exclusive_or_expression
+	: exclusive_or_expression 	{$$ = $1;}
+	| inclusive_or_expression '|' exclusive_or_expression 	{$1.push(new node('op', '|'));
+															$$ = $1.concat($3);}
 	;
 
 logical_and_expression
-	: inclusive_or_expression
-	| logical_and_expression AND_OP inclusive_or_expression
+	: inclusive_or_expression 	{$$ = $1;}
+	| logical_and_expression AND_OP inclusive_or_expression 	{$1.push(new node('op', $2));
+																$$ = $1.concat($3);}
 	;
 
 logical_or_expression
-	: logical_and_expression
-	| logical_or_expression OR_OP logical_and_expression
+	: logical_and_expression 	{$$ = $1;}
+	| logical_or_expression OR_OP logical_and_expression 	{$1.push(new node('op', $2));
+															$$ = $1.concat($3);}
 	;
 
 conditional_expression
-	: logical_or_expression
-	| logical_or_expression '?' expression ':' conditional_expression
+	: logical_or_expression 	{$$ = $1;}
+	| logical_or_expression '?' expression ':' conditional_expression 	{$1.push(new node('op', '?'));
+																		$$ = $1.concat($3);
+																		$$.push(new node('op', ':'));
+																		$$ = $$.concat($5);}
 	;
 
 assignment_expression
-	: conditional_expression
-	| unary_expression assignment_operator assignment_expression
+	: conditional_expression 	{$$ = $1;}
+	| unary_expression assignment_operator assignment_expression 	{$1.push($2);
+																	$$ = $1.concat($3);}
 	;
 
 assignment_operator
-	: '='
-	| MUL_ASSIGN
-	| DIV_ASSIGN
-	| MOD_ASSIGN
-	| ADD_ASSIGN
-	| SUB_ASSIGN
-	| LEFT_ASSIGN
-	| RIGHT_ASSIGN
-	| AND_ASSIGN
-	| XOR_ASSIGN
-	| OR_ASSIGN
+	: '='	{$$ = new node('op', $1);}
+	| MUL_ASSIGN 	{$$ = new node('op', $1);}
+	| DIV_ASSIGN	{$$ = new node('op', $1);}
+	| MOD_ASSIGN	{$$ = new node('op', $1);}
+	| ADD_ASSIGN	{$$ = new node('op', $1);}
+	| SUB_ASSIGN	{$$ = new node('op', $1);}
+	| LEFT_ASSIGN	{$$ = new node('op', $1);}
+	| RIGHT_ASSIGN	{$$ = new node('op', $1);}
+	| AND_ASSIGN	{$$ = new node('op', $1);}
+	| XOR_ASSIGN	{$$ = new node('op', $1);}
+	| OR_ASSIGN		{$$ = new node('op', $1);}
 	;
 
 expression
-	: assignment_expression
-	| expression ',' assignment_expression
+	: assignment_expression 	{$$ = $1;}
+	| expression ',' assignment_expression {$1.push(new node('',','));
+											$$ = $1.concat($3);}
 	;
 
 constant_expression
-	: conditional_expression
+	: conditional_expression 	{$$ = $1;}
 	;
 
 declaration
-	: declaration_specifiers ';'
-	| declaration_specifiers init_declarator_list ';'
+	: declaration_specifiers ';' 	{$1.push(new node('',';'));
+									$$ = $1;}
+	| declaration_specifiers init_declarator_list ';'  {$$ = $1.concat($2);
+														$$.push(new node('',';'));}
 	;
 
 declaration_specifiers
-	: type_specifier
-	| type_specifier declaration_specifiers
-	| type_qualifier
-	| type_qualifier declaration_specifiers
+	: type_specifier {$$ = [$1];}
+	| type_specifier declaration_specifiers {
+		$$ = $2.unshift($1);
+	}
+	| type_qualifier 	{$$ = [$1];}
+	| type_qualifier declaration_specifiers {
+		$$ = $2.unshift($1);
+	}
 	;
 
 init_declarator_list
-	: init_declarator
-	| init_declarator_list ',' init_declarator
+	: init_declarator 	{$$ = $1;}
+	| init_declarator_list ',' init_declarator  {$1.push(new node('',','));
+												$$ = $1.concat($3);}
 	;
 
 init_declarator
-	: declarator
-	| declarator '=' initializer
+	: declarator {$$ = $1;}
+	| declarator '=' initializer 	{$1.push(new node('op', '='));
+									$$ = $1.concat($3);}
 	;
 
 type_specifier
-	: VOID
-	| CHAR
-	| SHORT
-	| INT
-	| LONG
+	: VOID {$$ = new node('spec','void');}
+	| char 	{$$ = new node('spec','char');}
+	| SHORT {$$ = new node('spec','short');}
+	| INT 	{$$ = new node('spec','int');}
+	| LONG 	
 	| FLOAT
 	| DOUBLE
 	| SIGNED
@@ -293,75 +336,91 @@ type_specifier
 
 
 specifier_qualifier_list
-	: type_specifier specifier_qualifier_list
-	| type_specifier
-	| type_qualifier specifier_qualifier_list
-	| type_qualifier
+	: type_specifier specifier_qualifier_list {
+		$$ = $2.unshift($1);
+	}
+	| type_specifier 	{
+		$$ = [$1];
+	}
+	| type_qualifier specifier_qualifier_list {
+		$$ = $2.unshift($1);
+	}
+	| type_qualifier 	{$$ = [$1];}
 	;
 
 enumerator_list
-	: enumerator
-	| enumerator_list ',' enumerator
+	: enumerator 	{$$ = $1;}
+	| enumerator_list ',' enumerator 	{$1.push(new node('',','));
+										$$ = $1.concat($3);}
 	;
 
 enumerator
-	: IDENTIFIER
-	| IDENTIFIER '=' constant_expression
+	: IDENTIFIER 	{$$ = [$1];}
+	| IDENTIFIER '=' constant_expression 	{$$ = [$1, new node('op','=')].concat($3);}
 	;
 
 type_qualifier
-	: CONST
-	| VOLATILE
+	: CONST 	{$$ = new node('op', 'const');}
+	| VOLATILE 	{$$ = new node('op', 'volatile');}
 	;
 
 declarator
-	: direct_declarator
+	: direct_declarator {$$ = $1;}
 	;
 
 direct_declarator
-	: IDENTIFIER
-	| '(' declarator ')'
-	| direct_declarator '[' constant_expression ']'
-	| direct_declarator '[' ']'
-	| direct_declarator '(' parameter_type_list ')'
-	| direct_declarator '(' identifier_list ')'
-	| direct_declarator '(' ')'
+	: IDENTIFIER 	{$$ = [new node('id',yytext)];}
+	| '(' declarator ')' 	{$$ = $2.unshift(new node('br','('));
+							$$.push(new node('br',')')); console.log(373);}
+	| direct_declarator '[' constant_expression ']' {console.log(374);}
+	| direct_declarator '[' ']' 	{console.log(375);}
+	| direct_declarator '(' parameter_type_list ')' 	{$1.push(new node('br','('));
+														$$ = $1.concat($3);
+														$$.push(new node('br',')'));}
+	| direct_declarator '(' ')' 	{$1.push(new node('br','('));
+									$1.push(new node('br',')'));
+									$$ = $1;}
 	;
 
 type_qualifier_list
-	: type_qualifier
-	| type_qualifier_list type_qualifier
+	: type_qualifier {$$ = $1;}
+	| type_qualifier_list type_qualifier {$$ = $1.concat($2);}
 	;
 
 
 parameter_type_list
-	: parameter_list
-	| parameter_list ',' ELLIPSIS
+	: parameter_list 	{$$ = $1;}
+	| parameter_list ',' ELLIPSIS {$1.push(new node('',','));
+									$1.push(new node('', '...'));
+									$$ = $1;}
 	;
 
 parameter_list
-	: parameter_declaration
-	| parameter_list ',' parameter_declaration
+	: parameter_declaration {$$ = $1;}
+	| parameter_list ',' parameter_declaration {$1.push(new node('',','));
+												$$ = $1.concat($3);}
 	;
 
 parameter_declaration
-	: declaration_specifiers declarator
-	| declaration_specifiers abstract_declarator
-	| declaration_specifiers
+	: declaration_specifiers declarator  {$$ = $1.concat($2);}
+	| declaration_specifiers abstract_declarator {$$ = $1.concat($2);}
+	| declaration_specifiers 	{$$ = $1;}
 	;
 
 identifier_list
-	: IDENTIFIER
-	| identifier_list ',' IDENTIFIER
+	: IDENTIFIER 	{$$ = [new node('id',yytext)];}
+	| identifier_list ',' IDENTIFIER {$1.push(new node('',','));
+										$1.push(new node('id',$3));
+										$$ = $1;}
 	;
 
 type_name
-	: specifier_qualifier_list
-	| specifier_qualifier_list abstract_declarator
+	: specifier_qualifier_list 	{$$ = $1;}
+	| specifier_qualifier_list abstract_declarator 	{$$ = $1.concat($2);}
 	;
 
 abstract_declarator
-	:  direct_abstract_declarator
+	:  direct_abstract_declarator 	{$$ = $1;}
 	;
 
 direct_abstract_declarator
@@ -377,83 +436,120 @@ direct_abstract_declarator
 	;
 
 initializer
-	: assignment_expression
-	| '{' initializer_list '}'
+	: assignment_expression 	{$$ = $1;}
+	| '{' initializer_list '}' 	{$$ = [new node('br', '{')].concat($2);
+								$$.push(new node('br', '}'));}
 	| '{' initializer_list ',' '}'
 	;
 
 initializer_list
-	: initializer
-	| initializer_list ',' initializer
+	: initializer 	{$$ = $1;}
+	| initializer_list ',' initializer 	{$1.push(new node('',','));
+										$$ = $1.concat($3);}
 	;
 
 statement
-	: compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
+	: compound_statement 	{$$ = [$1];}
+	| expression_statement 	{$$ = [$1];}
+	| selection_statement	{$$ = [$1];}
+	| iteration_statement 	{$$ = [$1];}
+	| jump_statement 	{$$ = [$1];}
 	;
 
 compound_statement
-	: '{' '}'
-	| '{' statement_list '}'
-	| '{' declaration_list '}'
-	| '{' declaration_list statement_list '}'
+	: '{' '}' 	{$$ = new node('cmpstmt', []);}//[new node('br', '{'), new node('br', '}')]];}
+	| '{' statement_list '}' {//$$ = [new node('br', '{')].concat($2);
+								// $$.push(new node('br', '}'));
+								$$ = new node('cmpstmt', $2);}	
+	| '{' declaration_list '}' 	{//$$ = [new node('br', '{')].concat($2);
+								//$$.push(new node('br', '}'));
+								$$ = new node('cmpstmt', $2);}
+	| '{' declaration_list statement_list '}' 	{//$$ = [new node('br', '{')].concat($2);
+												//$$ = $$.concat($3);
+												//$$.push(new node('br', '}'));
+												$$ = new node('cmpstmt', $2.concat($3));}
 	;
 
 declaration_list
-	: declaration
-	| declaration_list declaration
+	: declaration 	{$$ = [new node('decstmt',$1)];}
+	| declaration_list declaration 	{$$ = $1;
+									$$.push(new node('decexp',$2));}
 	;
 
 statement_list
-	: statement
-	| statement_list statement
+	: statement 	{$$ = $1;}
+	| statement_list statement 	{$$ = $1.concat($2);}
 	;
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ';' 	{$$ = new node('expstmt', [new node('',';')]);}
+	| expression ';' 	{$1.push(new node('',';'));
+						$$ = new node('expstmt', $1);}
 	;
 
 selection_statement
-	: IF '(' expression ')' statement %prec IF_WITHOUT_ELSE
-	| IF '(' expression ')' statement ELSE statement
+	: IF '(' expression ')' statement %prec IF_WITHOUT_ELSE 	{
+		// var list = [new node('', 'if'), new node('', '(')].concat($3);
+		// 	list.push(new node('', ')'));
+		// 	$$ = list.concat($5);
+			$$ = new node('ifstmt',{'exp': $3, 'if': $5, 'else': []});
+	}
+	| IF '(' expression ')' statement ELSE statement {
+		// var list = [new node('', 'if'), new node('', '(')].concat($3);
+		// 	list.push(new node('', ')'));
+		// 	$$ = list.concat($5);
+		// 	$$.push(new node('', 'else'));
+		// 	$$ = $$.concat($7);
+		$$ = new node('ifstmt', {'exp': $3, 'if': $5, 'else': $7});
+	}
 	;
 
 iteration_statement
-	: WHILE '(' expression ')' statement
+	: WHILE '(' expression ')' statement {
+		// var list = [new node('', 'while'), new node('', '(')].concat($3);
+		// 	list.push(new node('', ')'));
+		// 	$$ = list.concat($5);
+		$$ = new node('whilestmt', {'exp': $3, 'body': $5});
+	}
 	;
 
 
 jump_statement
-	: CONTINUE ';'
-	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
+	: CONTINUE ';' {$$ = new node('jmpstmt',[new node('', 'continue'),new node('', ';')]);}
+	| BREAK ';' 	{$$ = new node('jmpstmt',[new node('', 'break'),new node('', ';')]);}
+	| RETURN ';' 	{$$ = new node('jmpstmt',[new node('', 'return'),new node('', ';')]);}
+	| RETURN expression ';' 	{var list = [new node('', 'return')].concat($2);
+								list.push(new node('', ';'));
+								$$ = new node('jmpstmt',list);}
 	;
 
 translation_unit
-	: external_declaration
+	: external_declaration {//sTree = $1;}
+		comment($1);}
 	;
 
 external_declaration
-	: function_definition
+	: function_definition {$$ = $1;}
 	;
 
 function_definition
-	: declaration_specifiers declarator declaration_list compound_statement
-	| declaration_specifiers declarator compound_statement
-	| declarator declaration_list compound_statement
-	| declarator compound_statement
+	: declaration_specifiers declarator compound_statement {$$ = {'type': 'function', 'proto': $1.concat($2), 'ins': $3};
+		// var list = $3.val;
+		// for(var x=0; x<list.length; x++) {
+		// 	if (list[x].type == 'ifstmt') {
+		// 		console.log('--------------------');
+		// 		console.log(list[x].val.exp);
+		// 		console.log(list[x].val.if[0]);
+		// 		console.log(list[x].val.else[0]);
+		// 		console.log('xxxxxxxxxxxxxxxxxxxxxxxx');
+		// 	}
+		// 	console.log(x,list[x]);
+		// }	
+	}
+	| declarator compound_statement {$$ = {'type': 'function', 'proto': $1, 'ins': $3};}
 ;
 
 %%
 function comment(arg){
 	console.log(arg);
-}
-
-function check_type(){
-	return;
 }

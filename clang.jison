@@ -1,3 +1,7 @@
+%{
+var sTree;
+%}
+
 %lex
 
 %%
