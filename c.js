@@ -98,7 +98,7 @@ case 4:
 		list.push(new node('br',')'));
 		this.$ = list;
 break;
-case 5: case 13: case 15: case 27: case 29: case 33: case 36: case 39: case 44: case 47: case 49: case 51: case 53: case 55: case 57: case 59: case 72: case 74: case 81: case 83: case 99: case 105: case 112: case 114: case 116: case 120: case 123: case 125: case 135: case 138: case 151: case 163:
+case 5: case 13: case 15: case 27: case 29: case 33: case 36: case 39: case 44: case 47: case 49: case 51: case 53: case 55: case 57: case 59: case 72: case 74: case 81: case 83: case 99: case 105: case 112: case 114: case 116: case 120: case 123: case 125: case 135: case 138: case 140: case 141: case 142: case 143: case 144: case 163:
 this.$ = $$[$0];
 break;
 case 7:
@@ -186,7 +186,7 @@ case 76:
 this.$ = $$[$0-2].concat($$[$0-1]);
 														this.$.push(new node('',';'));
 break;
-case 77: case 79: case 98: case 101: case 140: case 141: case 142: case 143: case 144:
+case 77: case 79: case 98: case 101: case 151:
 this.$ = [$$[$0]];
 break;
 case 78: case 80: case 95: case 97:
@@ -252,7 +252,7 @@ $$[$0-2].push(new node('br','('));
 									$$[$0-2].push(new node('br',')'));
 									this.$ = $$[$0-2];
 break;
-case 113: case 118: case 119: case 124: case 152:
+case 113: case 118: case 119: case 124:
 this.$ = $$[$0-1].concat($$[$0]);
 break;
 case 115:
@@ -295,6 +295,10 @@ case 150:
 this.$ = $$[$0-1];
 									this.$.push(new node('decexp',$$[$0]));
 break;
+case 152:
+this.$ = $$[$0-1];
+								this.$.push($$[$0]);
+break;
 case 153:
 this.$ = new node('expstmt', [new node('',';')]);
 break;
@@ -307,7 +311,7 @@ case 155:
 		// var list = [new node('', 'if'), new node('', '(')].concat($$[$0-2]);
 		// 	list.push(new node('', ')'));
 		// 	this.$ = list.concat($$[$0]);
-			this.$ = new node('ifstmt',{'exp': $$[$0-2], 'if': $$[$0], 'else': []});
+			this.$ = new node('ifstmt',{'exp': $$[$0-2], 'if': $$[$0], 'else': {}});
 	
 break;
 case 156:
@@ -1047,11 +1051,6 @@ Parser.prototype = parser;parser.Parser = Parser;
 return new Parser;
 })();
 
-//create CFG
-function cfg() {
-    
-}
-
 
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
 exports.parser = c;
@@ -1063,7 +1062,24 @@ exports.main = function commonjsMain(args) {
         process.exit(1);
     }
     var source = require('fs').readFileSync(require('path').normalize(args[1]), "utf8");
-    return exports.parser.parse(source);
+    var ret = exports.parser.parse(source);
+    // cfg(ret);
+    var temp = ret.ins.val;
+    for (var i=0; i<temp.length; i++) {
+        // console.log(temp[i]);
+        if (temp[i].type == 'ifstmt') {
+            console.log('ifstmt');
+            console.log(temp[i].val.exp);
+            console.log(temp[i].val.if);
+            console.log(temp[i].val.else);
+        } else if (temp[i].type == 'whilestmt') {
+            console.log('whilestmt');
+            console.log(temp[i].val.exp);
+            console.log(temp[i].val.body);
+        }
+    }
+    return ret;
+    // return exports.parser.parse(source);
 };
 if (typeof module !== 'undefined' && require.main === module) {
   exports.main(process.argv.slice(1));

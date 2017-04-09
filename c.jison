@@ -449,11 +449,11 @@ initializer_list
 	;
 
 statement
-	: compound_statement 	{$$ = [$1];}
-	| expression_statement 	{$$ = [$1];}
-	| selection_statement	{$$ = [$1];}
-	| iteration_statement 	{$$ = [$1];}
-	| jump_statement 	{$$ = [$1];}
+	: compound_statement 	{$$ = $1;}
+	| expression_statement 	{$$ = $1;}
+	| selection_statement	{$$ = $1;}
+	| iteration_statement 	{$$ = $1;}
+	| jump_statement 	{$$ = $1;}
 	;
 
 compound_statement
@@ -477,8 +477,9 @@ declaration_list
 	;
 
 statement_list
-	: statement 	{$$ = $1;}
-	| statement_list statement 	{$$ = $1.concat($2);}
+	: statement 	{$$ = [$1];}
+	| statement_list statement 	{$$ = $1;
+								$$.push($2);}
 	;
 
 expression_statement
@@ -492,7 +493,7 @@ selection_statement
 		// var list = [new node('', 'if'), new node('', '(')].concat($3);
 		// 	list.push(new node('', ')'));
 		// 	$$ = list.concat($5);
-			$$ = new node('ifstmt',{'exp': $3, 'if': $5, 'else': []});
+			$$ = new node('ifstmt',{'exp': $3, 'if': $5, 'else': {}});
 	}
 	| IF '(' expression ')' statement ELSE statement {
 		// var list = [new node('', 'if'), new node('', '(')].concat($3);
