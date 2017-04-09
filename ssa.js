@@ -6,6 +6,7 @@ function exec (input) {
 }
 
 var cfg = require('./utility').cfg;
+var printFunction = require('./utility').printFunction;
 var print_basic_block = require('./utility').print_basic_block;
 var symbolTable = {};
 
@@ -18,7 +19,8 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     // console.log(obj);
     var g = cfg(obj.ins);
     var node = g.entry;
-    process_decl(node);
+    printFunction(obj);
+    // process_decl(node);
     // process_BB(node);
     // while (true) {
     //     var ins = node.ins;

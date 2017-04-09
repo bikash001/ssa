@@ -4,7 +4,7 @@ int main(int a)
 {
 	int a, b;
 	a = 10 + (5*2);
-	b = +5;
+	b = + 5;
 	b = a * 4;
 	
 	// if (a < b){

@@ -137,13 +137,22 @@ exports.cfg = function cfg(cmpstmt) {
     return retval;
 }
 
-function printFunction(func) {
+exports.printFunction = function printFunction(func) {
     var str = "";
     for (var x=0; x<func.proto.length; x++) {
         str += func.proto[x].val + " ";
     }
     console.log(str);
+    // console.log(func);
     printInstruction(func.ins);
+}
+
+function print_single_inst(arg) {
+    var str = "\t";
+    for (var x=0; x<arg.length; x++) {
+        str += arg[x].val + " ";
+    }
+    console.log(str);
 }
 
 function printInstruction(arg) {
@@ -165,22 +174,22 @@ function printInstruction(arg) {
             print_single_inst(stmts[i].val);
         } else if (stmts[i].type == 'ifstmt') {
             var str = "\tif ( ";
-            for (var x=0; x<stmts[i].exp.length; x++) {
-                str += stmts[i].exp[x].val + " ";
+            for (var x=0; x<stmts[i].val.exp.length; x++) {
+                str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
             console.log(str);
-            printInstruction(stmts[i].if);
+            printInstruction(stmts[i].val.if);
             console.log('\telse');
-            printInstruction(stmts[i].else);
+            printInstruction(stmts[i].val.else);
         } else {
             var str = "\twhile ( ";
-            for (var x=0; x<stmts[i].exp.length; x++) {
-                str += stmts[i].exp[x].val + " ";
+            for (var x=0; x<stmts[i].val.exp.length; x++) {
+                str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
             console.log(str);
-            printInstruction(stmts[i].body);
+            printInstruction(stmts[i].val.body);
         }
     }
 
