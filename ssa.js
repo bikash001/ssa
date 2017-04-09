@@ -254,7 +254,7 @@ function phi_stmt(id, phinode) {
     this.val = [
         {val: lhsvar},
         {val: '='},
-        {val: 'Phi'},
+        {val: 'ϕ'},
         {val: '('},
         {val: rhsvar1},
         {val: ','},
