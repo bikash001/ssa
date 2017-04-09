@@ -19,14 +19,15 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     // console.log(obj);
     var g = cfg(obj.ins);
     var node = g.entry;
-    process_decl(node);
-    process_BB(node);
-    printFunction(obj);
+    // process_decl(node);
+    // process_BB(node);
+    // printFunction(obj);
     // while (true) {
     //     var ins = node.ins;
     // }
     // console.log(symbolTable);
-    // print_basic_block(node);
+    // console.log(node);
+    print_basic_block(node);
 });
 
 function process_decl(node) {
