@@ -192,6 +192,9 @@ function printInstruction(arg, sp) {
                 console.log(space+'else');
                 printInstruction(stmts[i].val.else,space);
             }
+            for (var x=0; x<stmts[i].join.ins.length; x++) {
+                print_single_inst(stmts[i].join.ins[x].val, space);
+            }
         } else {
             var str = space+"while ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
