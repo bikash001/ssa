@@ -151,24 +151,76 @@ function cfg(cmpstmt) {
     return retval;
 }
 
+function printFunction(func) {
+    var str = "";
+    for (var x=0; x<func.proto.length; x++) {
+        str += func.proto[x].val + " ";
+    }
+    console.log(str);
+    printInstruction(func.ins);
+}
 
-var ret = exports.parser.parse(source);
-    // cfg(ret);
-    var temp = ret.ins.val;
-    for (var i=0; i<temp.length; i++) {
-        if (temp[i].type == 'expstmt') {
-            console.log(temp[i]);
-        }
-        // console.log(temp[i]);
-        if (temp[i].type == 'ifstmt') {
-            console.log('ifstmt');
-            console.log(temp[i].val.exp);
-            console.log(temp[i].val.if);
-            console.log(temp[i].val.else);
-        } else if (temp[i].type == 'whilestmt') {
-            console.log('whilestmt');
-            console.log(temp[i].val.exp);
-            console.log(temp[i].val.body);
+function printInstruction(arg) {
+    var stmts;
+    if (arg.type == 'cmpstmt') {
+        stmts = arg.val;
+        console.log('{');
+    } else {
+        stmts = [arg];
+    }
+
+    for (var i=0; i<stmts.length; i++) {
+        // console.log(stmts[i]);
+        if (stmts[i].type == 'decstmt') {
+            print_single_inst(stmts[i].val);
+        } else if (stmts[i].type == 'expstmt') {
+            print_single_inst(stmts[i].val);
+        } else if (stmts[i].type == 'jmpstmt') {
+            print_single_inst(stmts[i].val);
+        } else if (stmts[i].type == 'ifstmt') {
+            var str = "\tif ( ";
+            for (var x=0; x<stmts[i].exp.length; x++) {
+                str += stmts[i].exp[x].val + " ";
+            }
+            str += ")";
+            console.log(str);
+            printInstruction(stmts[i].if);
+            console.log('\telse');
+            printInstruction(stmts[i].else);
+        } else {
+            var str = "\twhile ( ";
+            for (var x=0; x<stmts[i].exp.length; x++) {
+                str += stmts[i].exp[x].val + " ";
+            }
+            str += ")";
+            console.log(str);
+            printInstruction(stmts[i].body);
         }
     }
-    return ret;
+
+    if (arg.type == 'cmpstmt') {
+        console.log('}');
+    }
+}
+
+
+// var ret = exports.parser.parse(source);
+//     // cfg(ret);
+//     var temp = ret.ins.val;
+//     for (var i=0; i<temp.length; i++) {
+//         if (temp[i].type == 'expstmt') {
+//             console.log(temp[i]);
+//         }
+//         // console.log(temp[i]);
+//         if (temp[i].type == 'ifstmt') {
+//             console.log('ifstmt');
+//             console.log(temp[i].val.exp);
+//             console.log(temp[i].val.if);
+//             console.log(temp[i].val.else);
+//         } else if (temp[i].type == 'whilestmt') {
+//             console.log('whilestmt');
+//             console.log(temp[i].val.exp);
+//             console.log(temp[i].val.body);
+//         }
+//     }
+//     return ret;
