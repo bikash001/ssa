@@ -64,12 +64,41 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 tempblock.ins.push(stmts[i].val.if);
                 entryblock.succ.push(tempblock);
                 exitblock.pred.push(tempblock);
-            } else{
-                var ret = cfg(stmts[i].val.if);
-                ret.exit.succ.push(exitblock);
-                ret.entry.pred.push(entryblock);
-                entryblock.succ.push(ret.entry);
-                exitblock.pred.push(ret.exit);
+            } else {
+                if (stmts[i].val.if.type == 'ifstmt' || stmts[i].val.if.type == 'whilestmt'){
+                    var ret = cfg(stmts[i].val.if);
+                    var temp = BasicBlock();
+                    ret.exit.succ.push(exitblock);
+                    ret.entry.pred.push(temp);
+                    entryblock.succ.push(temp);
+                    temp.succ.push(ret.entry);
+                    temp.pred.push(entryblock);
+                    exitblock.pred.push(ret.exit);
+                } else {
+                    if (stmts[i].val.if.val[0].type == 'ifstmt' ||
+                    stmts[i].val.if.val[0].type == 'whilestmt') {
+                        var ret = cfg(stmts[i].val.if);
+                        var temp = BasicBlock();
+                        ret.exit.succ.push(exitblock);
+                        ret.entry.pred.push(temp);
+                        entryblock.succ.push(temp);
+                        temp.succ.push(ret.entry);
+                        temp.pred.push(entryblock);
+                        exitblock.pred.push(ret.exit);
+                    }
+                    else {
+                        var ret = cfg(stmts[i].val.if);
+                        ret.exit.succ.push(exitblock);
+                        ret.entry.pred.push(entryblock);
+                        entryblock.succ.push(ret.entry);
+                        exitblock.pred.push(ret.exit);
+                    }
+                }
+                // var ret = cfg(stmts[i].val.if);
+                // ret.exit.succ.push(exitblock);
+                // ret.entry.pred.push(entryblock);
+                // entryblock.succ.push(ret.entry);
+                // exitblock.pred.push(ret.exit);
             }
             if (Object.keys(stmts[i].val.else).length > 0) {
                 type = stmts[i].val.else.type;
@@ -79,11 +108,40 @@ exports.cfg = function cfg(cmpstmt, keys) {
                     entryblock.succ.push(tempblock);
                     exitblock.pred.push(tempblock);
                 } else {
-                    var ret = cfg(stmts[i].val.else);
+                    if (stmts[i].val.else.type == 'ifstmt' || stmts[i].val.else.type == 'whilestmt'){
+                    var ret = cfg(stmts[i].val.if);
+                    var temp = BasicBlock();
                     ret.exit.succ.push(exitblock);
-                    ret.entry.pred.push(entryblock);
-                    entryblock.succ.push(ret.entry);
+                    ret.entry.pred.push(temp);
+                    entryblock.succ.push(temp);
+                    temp.succ.push(ret.entry);
+                    temp.pred.push(entryblock);
                     exitblock.pred.push(ret.exit);
+                } else {
+                    if (stmts[i].val.else.val[0].type == 'ifstmt' ||
+                    stmts[i].val.else.val[0].type == 'whilestmt') {
+                        var ret = cfg(stmts[i].val.else);
+                        var temp = BasicBlock();
+                        ret.exit.succ.push(exitblock);
+                        ret.entry.pred.push(temp);
+                        entryblock.succ.push(temp);
+                        temp.succ.push(ret.entry);
+                        temp.pred.push(entryblock);
+                        exitblock.pred.push(ret.exit);
+                    }
+                    else {
+                        var ret = cfg(stmts[i].val.else);
+                        ret.exit.succ.push(exitblock);
+                        ret.entry.pred.push(entryblock);
+                        entryblock.succ.push(ret.entry);
+                        exitblock.pred.push(ret.exit);
+                    }
+                }
+                    // var ret = cfg(stmts[i].val.else);
+                    // ret.exit.succ.push(exitblock);
+                    // ret.entry.pred.push(entryblock);
+                    // entryblock.succ.push(ret.entry);
+                    // exitblock.pred.push(ret.exit);
                 }
             } else {
                 exitblock.pred.push(entryblock);
@@ -124,11 +182,36 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 entryblock.succ.push(tempblock);
                 entryblock.pred.push(tempblock);
             } else {
-                var ret = cfg(stmts[i].val.body);
-                ret.exit.succ.push(entryblock);
-                ret.entry.pred.push(entryblock);
-                entryblock.succ.push(ret.entry);
-                entryblock.pred.push(ret.exit);
+                if (stmts[i].val.body.type == 'ifstmt' || stmts[i].val.body.type == 'whilestmt'){
+                    var ret = cfg(stmts[i].val.body);
+                    var temp = BasicBlock();
+                    ret.exit.succ.push(entryblock);
+                    ret.entry.pred.push(temp);
+                    entryblock.succ.push(temp);
+                    temp.succ.push(ret.entry);
+                    temp.pred.push(entryblock);
+                    entryblock.pred.push(ret.exit);
+                } else {
+                    if (stmts[i].val.body.val[0].type == 'ifstmt' ||
+                    stmts[i].val.body.val[0].type == 'whilestmt') {
+                        var ret = cfg(stmts[i].val.body);
+                        var temp = BasicBlock();
+                        ret.exit.succ.push(entryblock);
+                        ret.entry.pred.push(temp);
+                        entryblock.succ.push(temp);
+                        temp.succ.push(ret.entry);
+                        temp.pred.push(entryblock);
+                        entryblock.pred.push(ret.exit);
+                    }
+                    else {
+                        var ret = cfg(stmts[i].val.body);
+                        ret.exit.succ.push(entryblock);
+                        ret.entry.pred.push(entryblock);
+                        entryblock.succ.push(ret.entry);
+                        entryblock.pred.push(ret.exit);
+                    }
+                }
+                
             }
             if (Object.keys(retval.entry).length > 0) {
                 retval.exit.succ.push(entryblock);

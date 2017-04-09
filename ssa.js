@@ -93,6 +93,10 @@ function process_while_BB(node) {
     var while_body = node.succ[0];
     var while_out = node.succ[1];
     var body_stmts = while_body.ins;
+
+    // TODO
+    // console.log(body_stmts.length);
+    // console.log(body_stmts[0]);
     for (var i = 0; i < body_stmts.length; i++) {
         var stmt = body_stmts[i];
         // console.log(stmt);
@@ -148,7 +152,7 @@ function process_while_BB(node) {
             var phinode = phi_nodes[assgn];
             phinode.rhs1 = currentValue[assgn];
             // console.log(phinode.rhs2);
-            console.log(backupSymbol[assgn]);
+            // console.log(backupSymbol[assgn]);
             phinode.rhs2 = backupSymbol[assgn];
         }
     }
