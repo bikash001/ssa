@@ -7,6 +7,7 @@ function exec (input) {
 
 var cfg = require('./utility').cfg;
 var printFunction = require('./utility').printFunction;
+var node = require('./utility').node;
 var print_basic_block = require('./utility').print_basic_block;
 var symbolTable = {};
 
@@ -50,6 +51,7 @@ function process_decl(node) {
 
 function process_BB(node) {
     if (node.visited) return;
+    node.visited = true;
     var stmts = node.ins;
     var len = stmts.length;
     for (var i = 0; i < len; i++) {
@@ -66,6 +68,30 @@ function process_BB(node) {
             stmts[i].val[0].val = assgn + symbolTable[assgn];
         }
     }
+    for (var i=0; i < node.succ.length; i++) {
+        if (isIfNode(node.succ[i])) {
+            process_if_BB(node.succ[i]);
+        }
+        else {
+            process_BB(node.succ[i]);
+        }
+    }
+}
+
+function process_if_BB(node) {
+    if (node.visited) return;
+    node.visited = true;
+    var joinBB = node.ins[0].join;
+    var phi_nodes = {};
+    var condition = node.ins[0];
+    for (var i = 0; i < condition.val.length; i++) {
+        var idObj = condition.val[i];
+        if (idObj.type == 'id') {
+            var id = idObj.val;
+            idObj.val = id + symbolTable[id];
+        }
+    }
+
 }
 
 function isAssignmentStmt(stmt) {
@@ -77,5 +103,9 @@ function isDeclStmt(stmt) {
 }
 
 function isIfNode(node) {
-    return (node.succ.length == 2);
+    return (node.ins[0].type == 'if-cond');
+}
+
+function newPhiNode() {
+
 }

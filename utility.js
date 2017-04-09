@@ -250,7 +250,9 @@ exports.print_basic_block = function print_basic_block(entry) {
 var node = function(x,y) {
     this.type = x;
     this.val = y;
-};
+}
+
+exports.node = node;
 
 var BasicBlock = function() {
     return {
