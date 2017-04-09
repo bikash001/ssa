@@ -46,6 +46,85 @@
 			</h4>
 		</div>
 	</div>
+	<div class="row">
+		<h3> Examples </h3>
+		<div class="col-md-4">
+			<pre class="pre-scrollable">
+int main()
+{
+	int a, b, c, d;
+	a = 10 + (5*2);
+	b = +5;
+	b = a * 4 / c;
+	a = a+1-b;
+	c = b-a;
+	a = c;
+	d = a + b + c;
+	if (a+b &lt; c) {
+		a = 1;
+		b = a+1;
+		a = b;
+		c = a;
+	}
+	else {
+		a = a + 1;
+		if (b &lt; c) {
+			c = c - b;
+			if (a &gt;=c) {
+				a = a-1;
+			}
+		}
+		else {
+			c = c + b;
+		}
+	}
+	d = a + b + c;
+	return 0;
+}
+			</pre>
+		</div>
+		<div class="col-md-4">
+			<pre>
+int main()
+{
+	int a, b;
+    if (a+b > 0) {
+        a = a + 1;
+        ;
+        if (a &lt;= b) {
+            a = a + b;
+        }
+        else {
+            a = a - b;
+        }
+    }
+    b = a + b;
+	return 0;
+}
+			</pre>
+		</div>
+		<div class="col-md-4">
+			<pre>
+
+int main() {
+    int a, b, i, j;
+    a = 1;
+    b = 2;
+    i = 0;
+    while (i &lt;= 10) {
+        if (a &gt; b) {
+            a = a + 1;
+        }
+        else {
+            b = 5;
+        }
+    }
+    j = a + b;
+    return 0;
+}
+			</pre>
+		</div>
+	</div>
 </div>
 <script type="text/javascript" src="c.js"/>
 <script type="text/javascript" src="utility.js"/>
