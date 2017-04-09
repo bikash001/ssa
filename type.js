@@ -1,3 +1,9 @@
+//parts of instruction
+var ipart = {
+	type: '',	//type can be 'id', 'op', ''
+	val : 		//value of the part
+}
+
 var cmpstmt = {
 	type: 'cmpstmt',
 	val: ['array of statement object']
@@ -5,7 +11,7 @@ var cmpstmt = {
 
 var expstmt = {
 	type: 'expstmt',
-	val: ['instruction parts']
+	val: ['object of instruction parts']
 }
 
 var ifstmt = {

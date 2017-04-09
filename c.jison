@@ -140,8 +140,11 @@ postfix_expression
 	: primary_expression 	{$$ = $1;}
 	| postfix_expression '[' expression ']'
 	| postfix_expression '(' ')' 	{$1.push(new node('br','('));
-									$1.push(new node('br','('));}
-	| postfix_expression '(' argument_expression_list ')'
+									$1.push(new node('br','('));
+									$$ = $1;}
+	| postfix_expression '(' argument_expression_list ')' 	{$1.push(new node('br','('));
+															$$ = $1.concat($3);
+															$$.push(new node('br',')'));}
 	| postfix_expression '.' IDENTIFIER
 	| postfix_expression PTR_OP IDENTIFIER
 	| postfix_expression INC_OP
@@ -156,9 +159,12 @@ argument_expression_list
 
 unary_expression
 	: postfix_expression 	{$$ = $1;}
-	| INC_OP unary_expression
-	| DEC_OP unary_expression
-	| unary_operator cast_expression
+	| INC_OP unary_expression {$$ = $2;
+								$$.unshift(new node('op', $1));}
+	| DEC_OP unary_expression {$$ = $2;
+								$$.unshift(new node('op', $1));}
+	| unary_operator cast_expression {$$ = $2;
+										$$.unshift(new node('op', $1));}
 	| SIZEOF unary_expression
 	| SIZEOF '(' type_name ')'
 	;
