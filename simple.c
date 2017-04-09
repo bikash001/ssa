@@ -9,5 +9,11 @@ int main(int a)
     a = a+1-b;
     c = b-a;
     a = c;
+    if (a+b < c) {
+        c = a;
+    }
+    else {
+        
+    }
 	// return 0;
 }
