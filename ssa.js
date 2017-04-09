@@ -1,24 +1,27 @@
-var parser = require("./c").parser;
-var fs = require('fs');
+// var parser = require("./c").parser;
+// var fs = require('fs');
+var parser = c;
 
 function exec (input) {
     return parser.parse(input);
 }
 
-var cfg = require('./utility').cfg;
-var printFunction = require('./utility').printFunction;
-var node = require('./utility').node;
-var print_basic_block = require('./utility').print_basic_block;
+// var cfg = require('./utility').cfg;
+// var printFunction = require('./utility').printFunction;
+// var node = require('./utility').node;
+// var print_basic_block = require('./utility').print_basic_block;
 var counter = {};
 var currentValue = {};
 
-var args = process.argv;
-var filename = args[2];
+// var args = process.argv;
+// var filename = args[2];
 
 var join_nodes = new Set();
 
-fs.readFile('./'+filename, 'utf8', function(err, data) {  
-    if (err) throw err;
+function runCode(){  
+    // if (err) throw err;
+    var data = document.getElementById('code').value;
+    // console.log(data);
     var obj = exec(data);
     // console.log(obj);
     var g = cfg(obj.ins);
@@ -27,13 +30,7 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     process_BB(node);
     // console.log(currentValue);
     printFunction(obj);
-    // while (true) {
-    //     var ins = node.ins;
-    // }
-    // console.log(symbolTable);
-    // console.log(node);
-    // print_basic_block(node);
-});
+}
 
 function process_decl(node) {
     if (node.visited) return;

@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="utf-8"/>
 	<title></title>
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+<script type="text/javascript" src="c.js"></script> 
+<script type="text/javascript" src="utility.js"></script>
+<script type="text/javascript" src="ssa.js"></script>
 </head>
 <body style="height: 100%; width: 100%;">
 <div class="container" style="position: relative; width: 100%; margin: 10px;">
@@ -11,8 +15,8 @@
 			<h2>Single Static Assignment Generator</h2>
 		</div>
 	</div>
-	<div class="row text-center" style="margin:0; height: 500px; width: 100%;">
-		<div class="col-md-3" style="border: 1px solid black; height: 100%;">
+	<div class="row" style="margin:0; height: 500px; width: 100%;">
+		<div class="col-md-3 text-center" style="border: 1px solid black; height: 100%;">
 			<h3>Instructions</h3>
 			<hr/>
 
@@ -20,17 +24,15 @@
 		<div class="col-md-4 text-center" style="border: 1px solid black; height: 100%;">
 			<h3>Input Code</h3>
 			<textarea id="code" style="width: 100%; height: 75%;"></textarea>
-			<button class="btn btn-primary" style="margin: 15px;" onclick="algo()">Compute SSA</button>
+			<button class="btn btn-primary" style="margin: 15px;" onclick="runCode()">Compute SSA</button>
 		</div>
-		<div class="col-md-5 text-center" style="border: 1px solid black; height: 100%;">
+		<div class="col-md-5" style="border: 1px solid black; height: 100%;">
 			<h3>Output</h3>
 			<hr/>
 			<div id="output"></div>
-			<code id="mycode"></code>
+			<pre id="mycode"></pre>
 		</div>
 	</div>
 </div>
-<script type="text/javascript" src="c.js"/>
-<script type="text/javascript" src="utility.js"/>
 </body>
 </html>
