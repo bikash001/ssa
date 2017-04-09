@@ -1,18 +1,4 @@
-var node = function(x,y) {
-    this.type = x;
-    this.val = y;
-};
-
-var BasicBlock = function() {
-    return {
-        pred: [],
-        succ: [],
-        ins: []
-    };
-}
-
-//create CFG
-function cfg(cmpstmt) {
+exports.cfg = function cfg(cmpstmt) {
     var retval = {entry: {}, exit: {}};
     var bb;
     var stmts;
@@ -224,3 +210,30 @@ function printInstruction(arg) {
 //         }
 //     }
 //     return ret;
+exports.print_basic_block = function print_basic_block(entry) {
+    while(!entry.seen) {
+        console.log('basic block starts');
+        console.log(entry.ins);
+        entry.seen = true;
+        console.log('basic block exits')
+        for (var x = 0; x < entry.pred.length; x++) {
+            print_basic_block(entry.pred[x]);
+        }
+        for (var x = 0; x < entry.succ.length; x++) {
+            print_basic_block(entry.succ[x]);
+        }
+    }
+}
+
+var node = function(x,y) {
+    this.type = x;
+    this.val = y;
+};
+
+var BasicBlock = function() {
+    return {
+        pred: [],
+        succ: [],
+        ins: []
+    };
+}
