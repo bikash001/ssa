@@ -28,7 +28,7 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     // }
     // console.log(symbolTable);
     // console.log(node);
-    print_basic_block(node);
+    // print_basic_block(node);
 });
 
 function process_decl(node) {

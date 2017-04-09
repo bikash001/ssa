@@ -1,4 +1,6 @@
-exports.cfg = function cfg(cmpstmt) {
+exports.cfg = function cfg(cmpstmt, keys) {
+    var globalKeys = keys || {};
+
     var retval = {entry: {}, exit: {}};
     var bb;
     var stmts;
@@ -15,7 +17,14 @@ exports.cfg = function cfg(cmpstmt) {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
+
             bb.ins.push(stmts[i]);
+            // for (var x=0; x<stmts[i].val.length; x++) {
+            //     if (stmts[i].val[x].type == 'id') {
+            //         globalKeys[stmts[i].val[x].val] = 0;
+            //         stmts[i].val[x].val += '0';
+            //     }
+            // }
         } else if (stmts[i].type == 'expstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
@@ -194,6 +203,10 @@ function printInstruction(arg, sp) {
                 console.log(space+'else');
                 printInstruction(stmts[i].val.else,space);
             }
+            for (var x=0; x<stmts[i].join.ins.length; x++) {
+               print_single_inst(stmts[i].join.ins[x].val,space); 
+            }
+            
         } else {
             var str = space+"while ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
