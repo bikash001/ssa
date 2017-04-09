@@ -39,7 +39,8 @@ function process_decl(node) {
                 var idObj = stmts[i].val[j];
                 if (idObj.type == 'id') {
                     var id = idObj.val;
-                    symbolTable[id] = 1;
+                    symbolTable[id] = 0;
+                    idObj.val = id + 0;
                 }
             }
         }
@@ -61,6 +62,7 @@ function process_BB(node) {
             }
             var assgn = stmts[i].val[0].val;
             symbolTable[assgn]++;
+            stmts[i].val[0].val = assgn + symbolTable[assgn];
         }
     }
 }
@@ -71,4 +73,8 @@ function isAssignmentStmt(stmt) {
 
 function isDeclStmt(stmt) {
     return (stmt.type == 'decstmt');
+}
+
+function isIfNode(node) {
+    return (node.succ.length == 2);
 }
