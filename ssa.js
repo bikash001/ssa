@@ -15,6 +15,8 @@ var currentValue = {};
 var args = process.argv;
 var filename = args[2];
 
+var join_nodes = new Set();
+
 fs.readFile('./'+filename, 'utf8', function(err, data) {  
     if (err) throw err;
     var obj = exec(data);
@@ -23,6 +25,7 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     var node = g.entry;
     process_decl(node);
     process_BB(node);
+    // console.log(currentValue);
     printFunction(obj);
     // while (true) {
     //     var ins = node.ins;
@@ -81,6 +84,8 @@ function process_if_BB(node) {
     }
 
     var joinBB = node.ins[0].join;
+    joinBB.is_join = true;
+    join_nodes.add(join_nodes);
     joinBB.phiNodes = {};
     var phi_nodes = joinBB.phiNodes;
     var condition = node.ins[0];
@@ -181,6 +186,7 @@ function process_if_BB(node) {
             // console.log(id + ' => ' + backupSymbol[id]);
             phi_nodes[id].backup = backupSymbol[id];
             currentValue[id] = phi_nodes[id].lhs;
+            console.log(id + " => " + phi_nodes[id].lhs);
             // console.log(phi_nodes[id]);
             phi_ins = new phi_stmt(id, phi_nodes[id]);
             // console.log(phi_ins);
@@ -189,10 +195,13 @@ function process_if_BB(node) {
     }
 
     for (var i=0; i < joinBB.succ.length; i++) {
+        // if (joinBB.succ[i].is_join) {
+        //     console.log('yeah');
+        // }
         if (isIfNode(joinBB.succ[i])) {
             process_if_BB(joinBB.succ[i]);
         }
-        else {
+        else if (!joinBB.succ[i].is_join){
             process_BB(joinBB.succ[i]);
         }
     }
@@ -222,6 +231,10 @@ function isExpressionStmt(stmt) {
 }
 
 function updateOps(stmt, start) {
+    // console.print('stmt = ' + stmt);
+    // console.log('new tuple');
+    // console.log(stmt);
+    // console.log(currentValue);
     for (var j = start; j < stmt.val.length; j++) {
         var idObj = stmt.val[j];
         if (idObj.type == 'id') {
@@ -232,6 +245,7 @@ function updateOps(stmt, start) {
 }
 
 function updateAssgn(stmt) {
+    console.log(stmt);
     var assgn = stmt.val[0].val;
     counter[assgn]++;
     currentValue[assgn] = counter[assgn];
