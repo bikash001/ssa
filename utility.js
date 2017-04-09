@@ -87,6 +87,7 @@ exports.cfg = function cfg(cmpstmt) {
             }
             exp.join = exitblock;
             exp.type = "if-cond";
+            stmts[i].join = exitblock;
         } else {
             var entryblock = BasicBlock();
             var exitblock = BasicBlock();
@@ -187,8 +188,10 @@ function printInstruction(arg, sp) {
             str += ")";
             console.log(str);
             printInstruction(stmts[i].val.if,space);
-            console.log(space+'else');
-            printInstruction(stmts[i].val.else,space);
+            if (Object.keys(stmts[i].val.else).length > 0) {
+                console.log(space+'else');
+                printInstruction(stmts[i].val.else,space);
+            }
         } else {
             var str = space+"while ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
