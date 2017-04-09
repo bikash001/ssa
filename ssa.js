@@ -82,11 +82,12 @@ function process_while_BB(node) {
     if(node.visited) return;
     node.visited = true;
     var expr = node.ins[0];
-    console.log(expr);
+    // console.log(expr);
     var backupSymbol={};
     for (var key in currentValue) {
         backupSymbol[key] = currentValue[key];
     }
+    // console.log(backupSymbol['i']);
     node.phiNodes = {};
     var phi_nodes = node.phiNodes;
     var while_body = node.succ[0];
@@ -126,9 +127,33 @@ function process_while_BB(node) {
             }
             var phinode = phi_nodes[assgn];
             phinode.rhs1 = currentValue[assgn];
-            phinode.rhs2 = backupVal;
+            phinode.rhs2 = backupSymbol[assgn];
         }
     }
+
+    // Handle nested WHILE
+    if (while_body.succ.length > 0 && isWhileNode(while_body.succ[0])) {
+        process_while_BB(while_body.succ[0]);
+        var join_stmts = while_body.succ[0].ins;
+        for (var i = 0; i < join_stmts.length - 1; i++) {
+            var stmt = join_stmts[i];
+            // updateOps(stmt, 2);
+            var assgn = stmt.id;
+            var backupVal = backupSymbol[assgn];
+            // updateAssgn(stmt);
+            if (!phi_nodes.hasOwnProperty(assgn)) {
+                var phinode = new newPhiNode(assgn, backupVal);
+                phi_nodes[assgn] = phinode;
+            }
+            var phinode = phi_nodes[assgn];
+            phinode.rhs1 = currentValue[assgn];
+            // console.log(phinode.rhs2);
+            console.log(backupSymbol[assgn]);
+            phinode.rhs2 = backupSymbol[assgn];
+        }
+    }
+
+    
 
     // Loop the loop!
     for (var id in phi_nodes) {
@@ -140,17 +165,17 @@ function process_while_BB(node) {
             // console.log(phi_nodes[id]);
             phi_ins = new phi_stmt(id, phi_nodes[id]);
             // console.log(phi_ins);
-            node.ins.unshift(phi_ins);
             var newVal = phi_nodes[id].lhs;
             currentValue[id] = newVal;
             var newId = id + newVal;
             var oldId = id + backupSymbol[id];
+            recursiveReplaceOps(while_body, oldId, newId);
+            node.ins.unshift(phi_ins);
             // console.log(newId + ' ' + oldVal);
             // for (var i = 0; i < body_stmts.length; i++) {
             //     var stmt = body_stmts[i];
             //     replaceOps(stmt, oldId, newId, 2);
             // }
-            recursiveReplaceOps(while_body, oldId, newId);
             // replaceOps(expr, oldId, newId, 0);
         }
     }
@@ -210,6 +235,25 @@ function process_if_BB(node) {
         process_if_BB(then_node.succ[0]);
         var join_stmts = then_node.succ[0].ins[0].join.ins;
         for (var i = 0; i < join_stmts.length; i++) {
+            var stmt = join_stmts[i];
+            // updateOps(stmt, 2);
+            var assgn = stmt.id;
+            var backupVal = currentValue[assgn];
+            // updateAssgn(stmt);
+            if (!phi_nodes.hasOwnProperty(assgn)) {
+                var phinode = new newPhiNode(assgn, backupVal);
+                phi_nodes[assgn] = phinode;
+            }
+            var phinode = phi_nodes[assgn];
+            phinode.rhs1 = currentValue[assgn];
+        }
+    }
+
+    // Handle nested while
+    if (then_node.succ.length > 0 && isWhileNode(then_node.succ[0])) {
+        process_while_BB(then_node.succ[0]);
+        var join_stmts = then_node.succ[0].ins;
+        for (var i = 0; i < join_stmts.length-1; i++) {
             var stmt = join_stmts[i];
             // updateOps(stmt, 2);
             var assgn = stmt.id;
