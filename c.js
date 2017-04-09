@@ -182,11 +182,49 @@ $$[$0-4].push(new node('op', '?'));
 																		this.$ = this.$.concat($$[$0]);
 break;
 case 60:
-$$[$0-2].push($$[$0-1]);
+
+																	if ($$[$0-1].type == 'op') {
+																		$$[$0-2].push($$[$0-1]);
+																		
+																	} else {
+																		$$[$0-2].push(new node('op', '='));
+																		$$[$0-2].push($$[$0-2][0]);
+																		$$[$0-2].push(new node('op',$$[$0-1].subtype));
+																	}
 																	this.$ = $$[$0-2].concat($$[$0]);
 break;
-case 61: case 62: case 63: case 64: case 65: case 66: case 67: case 68: case 69: case 70: case 71:
+case 61:
 this.$ = new node('op', $$[$0]);
+break;
+case 62:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '*';
+break;
+case 63:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '/';
+break;
+case 64:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '%';
+break;
+case 65:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '+';
+break;
+case 66:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '-';
+break;
+case 67:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '<<';
+break;
+case 68:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '>>';
+break;
+case 69:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '&';
+break;
+case 70:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '^';
+break;
+case 71:
+this.$ = new node('mop', $$[$0]); this.$.subtype = '|';
 break;
 case 73:
 $$[$0-2].push(new node('',','));
@@ -1065,19 +1103,6 @@ Parser.prototype = parser;parser.Parser = Parser;
 return new Parser;
 })();
 
-
-var node = function(x,y) {
-    this.type = x;
-    this.val = y;
-};
-
-var BasicBlock = function() {
-    return {
-        pred: [],
-        succ: [],
-        ins: []
-    };
-}
 
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
 exports.parser = c;

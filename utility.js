@@ -1,4 +1,6 @@
-exports.cfg = function cfg(cmpstmt) {
+exports.cfg = function cfg(cmpstmt, keys) {
+   // var globalKeys = keys || {};
+
     var retval = {entry: {}, exit: {}};
     var bb;
     var stmts;
@@ -15,12 +17,22 @@ exports.cfg = function cfg(cmpstmt) {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
+
             bb.ins.push(stmts[i]);
+            // for (var x=0; x<stmts[i].val.length; x++) {
+            //     if (stmts[i].val[x].type == 'id') {
+            //         globalKeys[stmts[i].val[x].val] = 0;
+            //         stmts[i].val[x].val += '0';
+            //     }
+            // }
         } else if (stmts[i].type == 'expstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
+            // if (stmts[i].val.length > 2) {
+            //     if (stmts[i].val)
+            // }
             // console.log('hello');
             // console.log(bb);
         } else if (stmts[i].type == 'jmpstmt') {
@@ -35,7 +47,7 @@ exports.cfg = function cfg(cmpstmt) {
             if (bb != undefined) {
                 if (Object.keys(retval.entry).length > 0) {
                     bb.pred.push(retval.exit);
-                    retval.exit.succ = bb;
+                    retval.exit.succ.push(bb);
                     retval.exit = bb;
                 } else {
                     retval.entry = bb;
@@ -44,7 +56,7 @@ exports.cfg = function cfg(cmpstmt) {
                 bb = undefined;
             }
 
-            var exp = new node('exp',stmts[i].val.exp);
+            var exp = new node('if-cond',stmts[i].val.exp);
             entryblock.ins.push(exp);
             var type = stmts[i].val.if.type;
             if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
@@ -86,7 +98,6 @@ exports.cfg = function cfg(cmpstmt) {
                 retval.exit = exitblock;
             }
             exp.join = exitblock;
-            exp.type = "if-cond";
             stmts[i].join = exitblock;
         } else {
             var entryblock = BasicBlock();
@@ -95,7 +106,7 @@ exports.cfg = function cfg(cmpstmt) {
             if (bb != undefined) {
                 if (Object.keys(retval.entry).length > 0) {
                     bb.pred.push(retval.exit);
-                    retval.exit.succ = bb;
+                    retval.exit.succ.push(bb);
                     retval.exit = bb;
                 } else {
                     retval.entry = bb;
@@ -104,31 +115,30 @@ exports.cfg = function cfg(cmpstmt) {
                 bb = undefined;
             }
 
-            var exp = new node('exp',stmts[i].val.exp);
-            entryblock.ins.push();
+            var exp = new node('while-cond',stmts[i].val.exp);
+            entryblock.ins.push(exp);
             var type = stmts[i].val.body.type;
             if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
                 var tempblock = BasicBlock();
                 tempblock.ins.push(stmts[i].val.body);
                 entryblock.succ.push(tempblock);
-                exitblock.pred.push(tempblock);
+                entryblock.pred.push(tempblock);
             } else {
                 var ret = cfg(stmts[i].val.body);
-                ret.exit.succ.push(exitblock);
+                ret.exit.succ.push(entryblock);
                 ret.entry.pred.push(entryblock);
                 entryblock.succ.push(ret.entry);
-                exitblock.pred.push(ret.exit);
+                entryblock.pred.push(ret.exit);
             }
             if (Object.keys(retval.entry).length > 0) {
                 retval.exit.succ.push(entryblock);
                 entryblock.pred.push(retval.exit);
-                retval.exit = exitblock;
+                retval.exit = entryblock;
             } else {
                 retval.entry = entryblock;
-                retval.exit = exitblock;
+                retval.exit = entryblock;
             }
-            exp.join = exitblock;
-            exp.type = "while-cond";
+            exp.join = entryblock;
         }
     }
     if (bb != undefined) {
@@ -140,6 +150,10 @@ exports.cfg = function cfg(cmpstmt) {
             retval.entry = bb;
             retval.exit = bb;
         }
+    }
+    if (Object.keys(retval.entry).length <= 0){
+        retval.entry = BasicBlock();
+        retval.exit = retval.entry;
     }
     return retval;
 }
@@ -156,6 +170,11 @@ exports.printFunction = function printFunction(func) {
 function print_single_inst(arg,space) {
     var str = space;
     for (var x=0; x<arg.length; x++) {
+        // if (arg[x].val == undefined) {
+        //     console.log('undefined');
+        //     console.log(arg[x]);
+        //     console.log(arg);
+        // }
         str += arg[x].val + " ";
     }
     console.log(str);
@@ -175,6 +194,8 @@ function printInstruction(arg, sp) {
     for (var i=0; i<stmts.length; i++) {
         // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
+            // console.log('hey');
+            // console.log(stmts[i].val);
             print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'expstmt') {
             print_single_inst(stmts[i].val,space);
@@ -193,7 +214,7 @@ function printInstruction(arg, sp) {
                 printInstruction(stmts[i].val.else,space);
             }
             for (var x=0; x<stmts[i].join.ins.length; x++) {
-                print_single_inst(stmts[i].join.ins[x].val, space);
+               print_single_inst(stmts[i].join.ins[x].val,space); 
             }
         } else {
             var str = space+"while ( ";

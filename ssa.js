@@ -28,6 +28,7 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     //     var ins = node.ins;
     // }
     // console.log(symbolTable);
+    // console.log(node);
     // print_basic_block(node);
 });
 
