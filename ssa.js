@@ -22,7 +22,7 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     var node = g.entry;
     // process_decl(node);
     // process_BB(node);
-    // printFunction(obj);
+    printFunction(obj);
     // while (true) {
     //     var ins = node.ins;
     // }

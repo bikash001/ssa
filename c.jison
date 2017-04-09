@@ -269,22 +269,30 @@ conditional_expression
 
 assignment_expression
 	: conditional_expression 	{$$ = $1;}
-	| unary_expression assignment_operator assignment_expression 	{$1.push($2);
+	| unary_expression assignment_operator assignment_expression 	{
+																	if ($2.type == 'op') {
+																		$1.push($2);
+																		
+																	} else {
+																		$1.push(new node('op', '='));
+																		$1.push($1[0]);
+																		$1.push(new node('op',$2.subtype));
+																	}
 																	$$ = $1.concat($3);}
 	;
 
 assignment_operator
 	: '='	{$$ = new node('op', $1);}
-	| MUL_ASSIGN 	{$$ = new node('op', $1);}
-	| DIV_ASSIGN	{$$ = new node('op', $1);}
-	| MOD_ASSIGN	{$$ = new node('op', $1);}
-	| ADD_ASSIGN	{$$ = new node('op', $1);}
-	| SUB_ASSIGN	{$$ = new node('op', $1);}
-	| LEFT_ASSIGN	{$$ = new node('op', $1);}
-	| RIGHT_ASSIGN	{$$ = new node('op', $1);}
-	| AND_ASSIGN	{$$ = new node('op', $1);}
-	| XOR_ASSIGN	{$$ = new node('op', $1);}
-	| OR_ASSIGN		{$$ = new node('op', $1);}
+	| MUL_ASSIGN 	{$$ = new node('mop', $1); $$.subtype = '*';}
+	| DIV_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '/';}
+	| MOD_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '%';}
+	| ADD_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '+';}
+	| SUB_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '-';}
+	| LEFT_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '<<';}
+	| RIGHT_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '>>';}
+	| AND_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '&';}
+	| XOR_ASSIGN	{$$ = new node('mop', $1); $$.subtype = '^';}
+	| OR_ASSIGN		{$$ = new node('mop', $1); $$.subtype = '|';}
 	;
 
 expression

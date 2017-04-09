@@ -19,17 +19,20 @@ exports.cfg = function cfg(cmpstmt, keys) {
             }
 
             bb.ins.push(stmts[i]);
-            // for (var x=0; x<stmts[i].val.length; x++) {
-            //     if (stmts[i].val[x].type == 'id') {
-            //         globalKeys[stmts[i].val[x].val] = 0;
-            //         stmts[i].val[x].val += '0';
-            //     }
-            // }
+            for (var x=0; x<stmts[i].val.length; x++) {
+                if (stmts[i].val[x].type == 'id') {
+                    globalKeys[stmts[i].val[x].val] = 0;
+                    stmts[i].val[x].val += '0';
+                }
+            }
         } else if (stmts[i].type == 'expstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
+            // if (stmts[i].val.length > 2) {
+            //     if (stmts[i].val)
+            // }
             // console.log('hello');
             // console.log(bb);
         } else if (stmts[i].type == 'jmpstmt') {
@@ -167,6 +170,11 @@ exports.printFunction = function printFunction(func) {
 function print_single_inst(arg,space) {
     var str = space;
     for (var x=0; x<arg.length; x++) {
+        // if (arg[x].val == undefined) {
+        //     console.log('undefined');
+        //     console.log(arg[x]);
+        //     console.log(arg);
+        // }
         str += arg[x].val + " ";
     }
     console.log(str);
@@ -186,6 +194,8 @@ function printInstruction(arg, sp) {
     for (var i=0; i<stmts.length; i++) {
         // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
+            console.log('hey');
+            console.log(stmts[i].val);
             print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'expstmt') {
             print_single_inst(stmts[i].val,space);
