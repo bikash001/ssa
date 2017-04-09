@@ -1,18 +1,4 @@
-var node = function(x,y) {
-    this.type = x;
-    this.val = y;
-};
-
-var BasicBlock = function() {
-    return {
-        pred: [],
-        succ: [],
-        ins: []
-    };
-}
-
-//create CFG
-function cfg(cmpstmt) {
+exports.cfg = function cfg(cmpstmt) {
     var retval = {entry: {}, exit: {}};
     var bb;
     var stmts;
@@ -151,24 +137,30 @@ function cfg(cmpstmt) {
     return retval;
 }
 
-
-var ret = exports.parser.parse(source);
-    // cfg(ret);
-    var temp = ret.ins.val;
-    for (var i=0; i<temp.length; i++) {
-        if (temp[i].type == 'expstmt') {
-            console.log(temp[i]);
+exports.print_basic_block = function print_basic_block(entry) {
+    while(!entry.seen) {
+        console.log('basic block starts');
+        console.log(entry.ins);
+        entry.seen = true;
+        console.log('basic block exits')
+        for (var x = 0; x < entry.pred.length; x++) {
+            print_basic_block(entry.pred[x]);
         }
-        // console.log(temp[i]);
-        if (temp[i].type == 'ifstmt') {
-            console.log('ifstmt');
-            console.log(temp[i].val.exp);
-            console.log(temp[i].val.if);
-            console.log(temp[i].val.else);
-        } else if (temp[i].type == 'whilestmt') {
-            console.log('whilestmt');
-            console.log(temp[i].val.exp);
-            console.log(temp[i].val.body);
+        for (var x = 0; x < entry.succ.length; x++) {
+            print_basic_block(entry.succ[x]);
         }
     }
-    return ret;
+}
+
+var node = function(x,y) {
+    this.type = x;
+    this.val = y;
+};
+
+var BasicBlock = function() {
+    return {
+        pred: [],
+        succ: [],
+        ins: []
+    };
+}
