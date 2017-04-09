@@ -101,7 +101,7 @@ exports.cfg = function cfg(cmpstmt, keys) {
             stmts[i].join = exitblock;
         } else {
             var entryblock = BasicBlock();
-            var exitblock = BasicBlock();
+            // var exitblock = BasicBlock();
 
             if (bb != undefined) {
                 if (Object.keys(retval.entry).length > 0) {
@@ -139,6 +139,7 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 retval.exit = entryblock;
             }
             exp.join = entryblock;
+            stmts[i].join = entryblock;
         }
     }
     if (bb != undefined) {
@@ -180,7 +181,9 @@ function print_single_inst(arg,space) {
     console.log(str);
 }
 
-function printInstruction(arg, sp) {
+var labelCounter = 0;
+
+function printInstruction(arg, sp, jump) {
     var stmts;
     var space = sp || "";
     if (arg.type == 'cmpstmt') {
@@ -217,18 +220,28 @@ function printInstruction(arg, sp) {
                print_single_inst(stmts[i].join.ins[x].val,space); 
             }
         } else {
-            var str = space+"while ( ";
+            var str = space;
+            labelCounter++;
+            console.log('loop_begin_' + labelCounter + ':');
+            for (var x=0; x<stmts[i].join.ins.length-1; x++) {
+               print_single_inst(stmts[i].join.ins[x].val,space); 
+            }
+            str += "if (";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
                 str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
             console.log(str);
-            printInstruction(stmts[i].val.body,space);
+            printInstruction(stmts[i].val.body,space,labelCounter);
+            
         }
     }
 
     if (arg.type == 'cmpstmt') {
         space = sp || "";
+        if (jump!=undefined) {
+            console.log('\t'+space+'goto loop_begin_' + jump + ';');
+        }
         console.log(space+'}');
     }
 }

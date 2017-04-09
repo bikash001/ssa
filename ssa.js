@@ -69,10 +69,103 @@ function process_BB(node) {
         if (isIfNode(node.succ[i])) {
             process_if_BB(node.succ[i]);
         }
+        else if (isWhileNode(node.succ[i])) {
+            process_while_BB(node.succ[i]);
+        }
         else {
             process_BB(node.succ[i]);
         }
     }
+}
+
+function process_while_BB(node) {
+    if(node.visited) return;
+    node.visited = true;
+    var expr = node.ins[0];
+    console.log(expr);
+    var backupSymbol={};
+    for (var key in currentValue) {
+        backupSymbol[key] = currentValue[key];
+    }
+    node.phiNodes = {};
+    var phi_nodes = node.phiNodes;
+    var while_body = node.succ[0];
+    var while_out = node.succ[1];
+    var body_stmts = while_body.ins;
+    for (var i = 0; i < body_stmts.length; i++) {
+        var stmt = body_stmts[i];
+        // console.log(stmt);
+        if (isAssignmentStmt(stmt)) {
+            updateOps(stmt, 2);
+            var assgn = stmt.val[0].val;
+            var backupVal = backupSymbol[assgn];
+            updateAssgn(stmt);
+            if (!phi_nodes.hasOwnProperty(assgn)) {
+                var phinode = new newPhiNode(assgn, backupVal);
+                phi_nodes[assgn] = phinode;
+            }
+            var phinode = phi_nodes[assgn];
+            phinode.rhs1 = currentValue[assgn];
+            phinode.rhs2 = backupVal;
+        }
+    }
+
+    // Handle nested IF
+    if (while_body.succ.length > 0 && isIfNode(while_body.succ[0])) {
+        process_if_BB(while_body.succ[0]);
+        var join_stmts = while_body.succ[0].ins[0].join.ins;
+        for (var i = 0; i < join_stmts.length; i++) {
+            var stmt = join_stmts[i];
+            // updateOps(stmt, 2);
+            var assgn = stmt.id;
+            var backupVal = backupSymbol[assgn];
+            // updateAssgn(stmt);
+            if (!phi_nodes.hasOwnProperty(assgn)) {
+                var phinode = new newPhiNode(assgn, backupVal);
+                phi_nodes[assgn] = phinode;
+            }
+            var phinode = phi_nodes[assgn];
+            phinode.rhs1 = currentValue[assgn];
+            phinode.rhs2 = backupVal;
+        }
+    }
+
+    // Loop the loop!
+    for (var id in phi_nodes) {
+        if (phi_nodes.hasOwnProperty(id)) {
+            // console.log(id + ' => ' + backupSymbol[id]);
+            phi_nodes[id].backup = backupSymbol[id];
+            currentValue[id] = phi_nodes[id].lhs;
+            // console.log(id + " => " + phi_nodes[id].lhs);
+            // console.log(phi_nodes[id]);
+            phi_ins = new phi_stmt(id, phi_nodes[id]);
+            // console.log(phi_ins);
+            node.ins.unshift(phi_ins);
+            var newVal = phi_nodes[id].lhs;
+            currentValue[id] = newVal;
+            var newId = id + newVal;
+            var oldId = id + backupSymbol[id];
+            // console.log(newId + ' ' + oldVal);
+            // for (var i = 0; i < body_stmts.length; i++) {
+            //     var stmt = body_stmts[i];
+            //     replaceOps(stmt, oldId, newId, 2);
+            // }
+            recursiveReplaceOps(while_body, oldId, newId);
+            // replaceOps(expr, oldId, newId, 0);
+        }
+    }
+    updateOps(expr, 0);
+
+    if (isIfNode(while_out)) {
+        process_if_BB(while_out);
+    }
+    else if (isWhileNode(while_out)) {
+        process_while_BB(while_out);
+    }
+    else if (!while_out.is_join) {
+        process_BB(while_out);
+    }
+    // console.log(node.ins[0]);
 }
 
 function process_if_BB(node) {
@@ -201,6 +294,9 @@ function process_if_BB(node) {
         if (isIfNode(joinBB.succ[i])) {
             process_if_BB(joinBB.succ[i]);
         }
+        else if (isWhileNode(joinBB.succ[i])) {
+            process_while_BB(joinBB.succ[i]);
+        }
         else if (!joinBB.succ[i].is_join){
             process_BB(joinBB.succ[i]);
         }
@@ -212,12 +308,20 @@ function isAssignmentStmt(stmt) {
     return (stmt.type == 'expstmt') && (stmt.val.length > 2) && (stmt.val[1].val == '=');
 }
 
+function isPhiStmt(stmt) {
+    return (stmt.type == 'phi');
+}
+
 function isDeclStmt(stmt) {
     return (stmt.type == 'decstmt');
 }
 
 function isIfNode(node) {
     return (node.ins.length > 0 && node.ins[0].type == 'if-cond');
+}
+
+function isWhileNode(node) {
+    return (node.ins.length > 0 && node.ins[0].type == 'while-cond');
 }
 
 function newPhiNode(assgn, backup) {
@@ -227,7 +331,7 @@ function newPhiNode(assgn, backup) {
 }
 
 function isExpressionStmt(stmt) {
-    return (stmt.type == 'exp');
+    return (stmt.type == 'exp' || stmt.type == 'while-cond' || stmt.type == 'if-cond');
 }
 
 function updateOps(stmt, start) {
@@ -242,6 +346,42 @@ function updateOps(stmt, start) {
             idObj.val = id + currentValue[id];
         }
     }
+}
+
+function replaceOps(stmt, oldId, newId, start) {
+    for (var j = start; j < stmt.val.length; j++) {
+        var idObj = stmt.val[j];
+        if (idObj.type == 'id') {
+            var id = idObj.val;
+            if (id == oldId) {
+                idObj.val = newId;
+            }
+        }
+    }
+}
+
+function recursiveReplaceOps(node, oldId, newId) {
+    if (node.recursiveReplace == newId) {
+        return;
+    }
+    node.recursiveReplace = newId;
+    var stmts = node.ins;
+    var len = stmts.length;
+    for (var i = 0; i < len; i++) {
+        if (isAssignmentStmt(stmts[i]) || isPhiStmt(stmts[i])) {
+            replaceOps(stmts[i], oldId, newId, 2);
+        }
+        else if (isExpressionStmt(stmts[i])) {
+            replaceOps(stmts[i], oldId, newId, 0);
+        }
+    }
+    for (var i=0; i < node.succ.length; i++) {
+        recursiveReplaceOps(node.succ[i], oldId, newId);
+    }
+    if (isIfNode(node)) {
+        recursiveReplaceOps(node.ins[0].join, oldId, newId);
+    }
+
 }
 
 function updateAssgn(stmt) {
@@ -266,13 +406,13 @@ function phi_stmt(id, phinode) {
     this.backup = phinode.backup;
     this.id = id;
     this.val = [
-        {val: lhsvar},
+        {type:'id', val: lhsvar},
         {val: '='},
         {val: 'ϕ'},
         {val: '('},
-        {val: rhsvar1},
+        {type:'id', val: rhsvar1},
         {val: ','},
-        {val: rhsvar2},
+        {type:'id', val: rhsvar2},
         {val: ')'},
         {val: ';'}
     ];
