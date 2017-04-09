@@ -4,22 +4,29 @@
 	<title></title>
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
 </head>
-<body>
-<div class="container">
-	<div class="row">
-		<div class="col-md-12 text-center">
-			<h1>SSA</h1>
+<body style="height: 100%; width: 100%;">
+<div class="container" style="position: relative; width: 100%; margin: 10px;">
+	<div class="row text-center bg-primary" style="margin: 0;">
+		<div class="col-md-12">
+			<h2>Single Static Assignment Generator</h2>
 		</div>
 	</div>
-	<div class="row" style="height: 500px; width: 100%;">
-		<div class="col-md-6 text-center" style="height: 100%;">
-			<h2>Code</h2>
-			<textarea id="code" style="width: 100%; height: 80%;"></textarea>
-			<button class="btn btn-primary" style="margin: 15px;" onclick="algo()">Run</button>
+	<div class="row text-center" style="margin:0; height: 500px; width: 100%;">
+		<div class="col-md-3" style="border: 1px solid black; height: 100%;">
+			<h3>Instructions</h3>
+			<hr/>
+
 		</div>
-		<div class="col-md-6 text-center">
-			<h2>Output</h2>
+		<div class="col-md-4 text-center" style="border: 1px solid black; height: 100%;">
+			<h3>Input Code</h3>
+			<textarea id="code" style="width: 100%; height: 75%;"></textarea>
+			<button class="btn btn-primary" style="margin: 15px;" onclick="algo()">Compute SSA</button>
+		</div>
+		<div class="col-md-5 text-center" style="border: 1px solid black; height: 100%;">
+			<h3>Output</h3>
+			<hr/>
 			<div id="output"></div>
+			<code id="mycode"></code>
 		</div>
 	</div>
 </div>

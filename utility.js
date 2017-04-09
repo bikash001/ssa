@@ -330,26 +330,6 @@ function printInstruction(arg, sp, jump) {
 }
 
 
-// var ret = exports.parser.parse(source);
-//     // cfg(ret);
-//     var temp = ret.ins.val;
-//     for (var i=0; i<temp.length; i++) {
-//         if (temp[i].type == 'expstmt') {
-//             console.log(temp[i]);
-//         }
-//         // console.log(temp[i]);
-//         if (temp[i].type == 'ifstmt') {
-//             console.log('ifstmt');
-//             console.log(temp[i].val.exp);
-//             console.log(temp[i].val.if);
-//             console.log(temp[i].val.else);
-//         } else if (temp[i].type == 'whilestmt') {
-//             console.log('whilestmt');
-//             console.log(temp[i].val.exp);
-//             console.log(temp[i].val.body);
-//         }
-//     }
-//     return ret;
 exports.print_basic_block = function print_basic_block(entry) {
     while(!entry.seen) {
         console.log('basic block starts');

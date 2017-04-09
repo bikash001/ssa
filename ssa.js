@@ -64,6 +64,9 @@ function process_BB(node) {
             updateOps(stmts[i], 2);
             updateAssgn(stmts[i]);
         }
+        else if (isExpressionStmt(stmts[i])) {
+            updateOps(stmts[i], 2);
+        }
     }
     for (var i=0; i < node.succ.length; i++) {
         if (isIfNode(node.succ[i])) {
@@ -379,7 +382,7 @@ function newPhiNode(assgn, backup) {
 }
 
 function isExpressionStmt(stmt) {
-    return (stmt.type == 'exp' || stmt.type == 'while-cond' || stmt.type == 'if-cond');
+    return (stmt.type == 'exp' || stmt.type == 'while-cond' || stmt.type == 'if-cond' || stmt.type == 'expstmt');
 }
 
 function updateOps(stmt, start) {
