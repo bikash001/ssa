@@ -87,6 +87,7 @@ exports.cfg = function cfg(cmpstmt) {
             }
             exp.join = exitblock;
             exp.type = "if-cond";
+            stmts[i].join = exitblock;
         } else {
             var entryblock = BasicBlock();
             var exitblock = BasicBlock();
@@ -160,13 +161,13 @@ function print_single_inst(arg,space) {
     console.log(str);
 }
 
-function printInstruction(arg) {
+function printInstruction(arg, sp) {
     var stmts;
-    var space = "";
+    var space = sp || "";
     if (arg.type == 'cmpstmt') {
         stmts = arg.val;
-        console.log('{');
-        space = "\t";
+        console.log(space+'{');
+        space += "\t";
     } else {
         stmts = [arg];
     }
@@ -180,28 +181,31 @@ function printInstruction(arg) {
         } else if (stmts[i].type == 'jmpstmt') {
             print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'ifstmt') {
-            var str = "if ( ";
+            var str = space+"if ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
                 str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
             console.log(str);
-            printInstruction(stmts[i].val.if);
-            console.log('\telse');
-            printInstruction(stmts[i].val.else);
+            printInstruction(stmts[i].val.if,space);
+            if (Object.keys(stmts[i].val.else).length > 0) {
+                console.log(space+'else');
+                printInstruction(stmts[i].val.else,space);
+            }
         } else {
-            var str = "\twhile ( ";
+            var str = space+"while ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
                 str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
             console.log(str);
-            printInstruction(stmts[i].val.body);
+            printInstruction(stmts[i].val.body,space);
         }
     }
 
     if (arg.type == 'cmpstmt') {
-        console.log('}');
+        space = sp || "";
+        console.log(space+'}');
     }
 }
 
