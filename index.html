@@ -7,17 +7,28 @@
 <script type="text/javascript" src="c.js"></script> 
 <script type="text/javascript" src="utility.js"></script>
 <script type="text/javascript" src="ssa.js"></script>
+<link rel="stylesheet" type="text/css" href="./main.css"/>
 </head>
-<body style="height: 100%; width: 100%;">
-<div class="container" style="position: relative; width: 100%; margin: 10px;">
+<body style="position: relative; height: 100%; width: 100%;">
+<div class="container" style="position: relative; width: 100%; margin: 10px 0;">
 	<div class="row text-center bg-primary" style="margin: 0;">
 		<div class="col-md-12">
 			<h2>Single Static Assignment Generator</h2>
 		</div>
 	</div>
 	<div class="row" style="margin:0; height: 500px; width: 100%;">
-		<div class="col-md-3 text-center" style="border: 1px solid black; height: 100%;">
+		<div class="col-md-3 text-center" style="border: 1px solid black; height: 100%; overflow-y: auto;">
 			<h3>Instructions</h3>
+				<ul class="list-group">
+					<li class="list-group-item">Enter a valid C program with only the main() function</li>
+					<li class="list-group-item">All the variables should be declared in the beginning</li>
+					<li class="list-group-item">Only 'if' and 'while' control flow statements are allowed</li>
+					<li class="list-group-item">Arbitrary control flow like 'goto' and 'break' is not allowed</li>
+					<li class="list-group-item">There can only be a single if/while statement inside another if/while statement</li>
+					<li class="list-group-item">Conditions in if/while cannot contain assignments. For example, 'if (a = b+c) {...} is not allowed</li>
+					<li class="list-group-item">Only +,-,/,*,% operators are allowed</li>
+					<li class="list-group-item">Only scalar values are allowed. Arrays/pointers are not allowed</li>
+				</ul>
 			<hr/>
 
 		</div>
@@ -27,10 +38,77 @@
 			<button class="btn btn-primary" style="margin: 15px;" onclick="runCode()">Compute SSA</button>
 		</div>
 		<div class="col-md-5" style="border: 1px solid black; height: 100%;">
-			<h3>Output</h3>
-			<hr/>
-			<div id="output"></div>
-			<pre id="mycode"></pre>
+			<h3 class="text-center">Output</h3>
+			<pre id="mycode" class="pre-scrollable"></pre>
+		</div>
+	</div>
+	<div class="row" style="margin: 5px;">
+		<hr style="color: blue;">
+		<h3 class="text-center"> Examples </h3>
+		<div class="col-md-4">
+			<pre class="pre-scrollable">
+int main()
+{
+	int a, b, c;
+	a = 10 + (5*2);
+	b = 5;
+	b = a * 4 / c;
+	a = a+1-b;
+	c = b-a;
+	a = c;
+	printf("%d", a + b + c);
+	return 0;
+}
+			</pre>
+		</div>
+		<div class="col-md-4">
+			<pre class="pre-scrollable">
+int main()
+{
+	int a, b;
+	if (a+b > 0) {
+        a = a + 1;
+		if (a &lt;= b) {
+			a = a + b;
+		}
+		else {
+			a = a - b;
+		}
+	}
+	b = a + b;
+	return 0;
+}
+			</pre>
+		</div>
+		<div class="col-md-4">
+			<pre class="pre-scrollable">
+
+int main() {
+    int a, b, i, j;
+    a = 1;
+    b = 2;
+    i = 0;
+    while (i &lt;= 10) {
+        if (a &gt; b) {
+            a = a + 1;
+        }
+        else {
+            b = 5;
+        }
+    }
+    j = a + b;
+    return 0;
+}
+			</pre>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-md-offset-3">
+			<h4 class="text-center">
+			Created by Bikash Gogoi and Bhuvan Agrawal as a course project for CS6843 Program Analysis in Jan 2017
+			</h4>
+			<p class="text-center">This project uses <a href="https://zaa.ch/jison/">jison</a> to generate parser. We have implemented the algorithm
+			described in <a href="http://dl.acm.org/citation.cfm?id=197331">[BM94].</a></p>
 		</div>
 	</div>
 </div>

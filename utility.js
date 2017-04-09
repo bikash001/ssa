@@ -1,40 +1,26 @@
-function cfg(cmpstmt, keys) {
-   // var globalKeys = keys || {};
+function cfg(cmpstmt) {
 
     var retval = {entry: {}, exit: {}};
     var bb;
     var stmts;
     if (cmpstmt.type == 'cmpstmt') {
         stmts = cmpstmt.val;
-        // console.log(stmts);
     } else {
         stmts = [cmpstmt];
     }
 
     for (var i=0; i<stmts.length; i++) {
-        // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
 
             bb.ins.push(stmts[i]);
-            // for (var x=0; x<stmts[i].val.length; x++) {
-            //     if (stmts[i].val[x].type == 'id') {
-            //         globalKeys[stmts[i].val[x].val] = 0;
-            //         stmts[i].val[x].val += '0';
-            //     }
-            // }
         } else if (stmts[i].type == 'expstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
-            // if (stmts[i].val.length > 2) {
-            //     if (stmts[i].val)
-            // }
-            // console.log('hello');
-            // console.log(bb);
         } else if (stmts[i].type == 'jmpstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
@@ -94,11 +80,6 @@ function cfg(cmpstmt, keys) {
                         exitblock.pred.push(ret.exit);
                     }
                 }
-                // var ret = cfg(stmts[i].val.if);
-                // ret.exit.succ.push(exitblock);
-                // ret.entry.pred.push(entryblock);
-                // entryblock.succ.push(ret.entry);
-                // exitblock.pred.push(ret.exit);
             }
             if (Object.keys(stmts[i].val.else).length > 0) {
                 type = stmts[i].val.else.type;
@@ -109,39 +90,34 @@ function cfg(cmpstmt, keys) {
                     exitblock.pred.push(tempblock);
                 } else {
                     if (stmts[i].val.else.type == 'ifstmt' || stmts[i].val.else.type == 'whilestmt'){
-                    var ret = cfg(stmts[i].val.if);
-                    var temp = BasicBlock();
-                    ret.exit.succ.push(exitblock);
-                    ret.entry.pred.push(temp);
-                    entryblock.succ.push(temp);
-                    temp.succ.push(ret.entry);
-                    temp.pred.push(entryblock);
-                    exitblock.pred.push(ret.exit);
-                } else {
-                    if (stmts[i].val.else.val[0].type == 'ifstmt' ||
-                    stmts[i].val.else.val[0].type == 'whilestmt') {
-                        var ret = cfg(stmts[i].val.else);
-                        var temp = BasicBlock();
-                        ret.exit.succ.push(exitblock);
-                        ret.entry.pred.push(temp);
-                        entryblock.succ.push(temp);
-                        temp.succ.push(ret.entry);
-                        temp.pred.push(entryblock);
-                        exitblock.pred.push(ret.exit);
-                    }
-                    else {
-                        var ret = cfg(stmts[i].val.else);
-                        ret.exit.succ.push(exitblock);
-                        ret.entry.pred.push(entryblock);
-                        entryblock.succ.push(ret.entry);
-                        exitblock.pred.push(ret.exit);
-                    }
-                }
-                    // var ret = cfg(stmts[i].val.else);
-                    // ret.exit.succ.push(exitblock);
-                    // ret.entry.pred.push(entryblock);
-                    // entryblock.succ.push(ret.entry);
-                    // exitblock.pred.push(ret.exit);
+	                    var ret = cfg(stmts[i].val.if);
+	                    var temp = BasicBlock();
+	                    ret.exit.succ.push(exitblock);
+	                    ret.entry.pred.push(temp);
+	                    entryblock.succ.push(temp);
+	                    temp.succ.push(ret.entry);
+	                    temp.pred.push(entryblock);
+	                    exitblock.pred.push(ret.exit);
+	                } else {
+	                    if (stmts[i].val.else.val[0].type == 'ifstmt' ||
+	                    stmts[i].val.else.val[0].type == 'whilestmt') {
+	                        var ret = cfg(stmts[i].val.else);
+	                        var temp = BasicBlock();
+	                        ret.exit.succ.push(exitblock);
+	                        ret.entry.pred.push(temp);
+	                        entryblock.succ.push(temp);
+	                        temp.succ.push(ret.entry);
+	                        temp.pred.push(entryblock);
+	                        exitblock.pred.push(ret.exit);
+	                    }
+	                    else {
+	                        var ret = cfg(stmts[i].val.else);
+	                        ret.exit.succ.push(exitblock);
+	                        ret.entry.pred.push(entryblock);
+	                        entryblock.succ.push(ret.entry);
+	                        exitblock.pred.push(ret.exit);
+	                    }
+	                }
                 }
             } else {
                 exitblock.pred.push(entryblock);
@@ -159,7 +135,6 @@ function cfg(cmpstmt, keys) {
             stmts[i].join = exitblock;
         } else {
             var entryblock = BasicBlock();
-            // var exitblock = BasicBlock();
 
             if (bb != undefined) {
                 if (Object.keys(retval.entry).length > 0) {
@@ -248,22 +223,14 @@ function printFunction(func) {
         str += func.proto[x].val + " ";
     }
     str += printInstruction(func.ins);
-    // console.log(str);
-    // console.log(printInstruction(func.ins));
     document.getElementById('mycode').innerHTML = str;
 }
 
 function print_single_inst(arg,space) {
     var str = space;
     for (var x=0; x<arg.length; x++) {
-        // if (arg[x].val == undefined) {
-        //     console.log('undefined');
-        //     console.log(arg[x]);
-        //     console.log(arg);
-        // }
         str += arg[x].val + " ";
     }
-    // console.log(str);
     return str+'\n';
 }
 
@@ -275,17 +242,13 @@ function printInstruction(arg, sp, jump) {
     var space = sp || "";
     if (arg.type == 'cmpstmt') {
         stmts = arg.val;
-        // console.log(space+'{');
         finalStr += space+"{\n";
         space += "\t";
     } else {
         stmts = [arg];
     }
     for (var i=0; i<stmts.length; i++) {
-        // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
-            // console.log('hey');
-            // console.log(stmts[i].val);
             finalStr += print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'expstmt') {
             finalStr += print_single_inst(stmts[i].val,space);
@@ -297,11 +260,9 @@ function printInstruction(arg, sp, jump) {
                 str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
-            // console.log(str);
             finalStr += str+'\n';
             finalStr += printInstruction(stmts[i].val.if,space);
             if (Object.keys(stmts[i].val.else).length > 0) {
-                // console.log(space+'else');
                 finalStr += space+'else\n';
                 finalStr += printInstruction(stmts[i].val.else,space);
             }
@@ -312,7 +273,6 @@ function printInstruction(arg, sp, jump) {
             var str = space;
             labelCounter++;
             finalStr += "loop_begin_"+labelCounter+':\n';
-            // console.log('loop_begin_' + labelCounter + ':');
             for (var x=0; x<stmts[i].join.ins.length-1; x++) {
                finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
             }
@@ -321,7 +281,6 @@ function printInstruction(arg, sp, jump) {
                 str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
-            // console.log(str);
             finalStr += str+'\n';
             finalStr += printInstruction(stmts[i].val.body,space,labelCounter);
             
@@ -332,9 +291,7 @@ function printInstruction(arg, sp, jump) {
         space = sp || "";
         if (jump!=undefined) {
             finalStr += '\t'+space+'goto loop_begin_' + jump + ';\n';
-            // console.log('\t'+space+'goto loop_begin_' + jump + ';');
         }
-        // console.log(space+'}');
         finalStr += space+'}\n';
     }
     return finalStr;
@@ -360,8 +317,6 @@ var node = function(x,y) {
     this.type = x;
     this.val = y;
 }
-
-// exports.node = node;
 
 var BasicBlock = function() {
     return {

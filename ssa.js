@@ -1,34 +1,20 @@
-// var parser = require("./c").parser;
-// var fs = require('fs');
 var parser = c;
 
 function exec (input) {
     return parser.parse(input);
 }
 
-// var cfg = require('./utility').cfg;
-// var printFunction = require('./utility').printFunction;
-// var node = require('./utility').node;
-// var print_basic_block = require('./utility').print_basic_block;
 var counter = {};
 var currentValue = {};
-
-// var args = process.argv;
-// var filename = args[2];
-
 var join_nodes = new Set();
 
 function runCode(){  
-    // if (err) throw err;
     var data = document.getElementById('code').value;
-    // console.log(data);
     var obj = exec(data);
-    // console.log(obj);
     var g = cfg(obj.ins);
     var node = g.entry;
     process_decl(node);
     process_BB(node);
-    // console.log(currentValue);
     printFunction(obj);
 }
 
@@ -383,10 +369,6 @@ function isExpressionStmt(stmt) {
 }
 
 function updateOps(stmt, start) {
-    // console.print('stmt = ' + stmt);
-    // console.log('new tuple');
-    // console.log(stmt);
-    // console.log(currentValue);
     for (var j = start; j < stmt.val.length; j++) {
         var idObj = stmt.val[j];
         if (idObj.type == 'id') {
