@@ -19,9 +19,9 @@ fs.readFile('./'+filename, 'utf8', function(err, data) {
     // console.log(obj);
     var g = cfg(obj.ins);
     var node = g.entry;
+    process_decl(node);
+    process_BB(node);
     printFunction(obj);
-    // process_decl(node);
-    // process_BB(node);
     // while (true) {
     //     var ins = node.ins;
     // }
