@@ -14,6 +14,16 @@
 	<div class="row text-center" style="margin:0; height: 500px; width: 100%;">
 		<div class="col-md-3" style="border: 1px solid black; height: 100%;">
 			<h3>Instructions</h3>
+				<ul class="list-group">
+					<li class="list-group-item">Enter a valid C program with only the main() function</li>
+					<li class="list-group-item">All the variables should be declared in the beginning</li>
+					<li class="list-group-item">Only 'if' and 'while' control flow statements are allowed</li>
+					<li class="list-group-item">Arbitrary control flow like 'goto' and 'break' is not allowed</li>
+					<li class="list-group-item">There can only be a single if/while statement inside another if/while statement</li>
+					<li class="list-group-item">Conditions in if/while cannot contain assignments. For example, 'if (a = b+c) {...} is not allowed</li>
+					<li class="list-group-item">Only +,-,/,*,% operators are allowed</li>
+					<li class="list-group-item">Only scalar values are allowed. Arrays/pointers are not allowed</li>
+				</ul>
 			<hr/>
 
 		</div>
@@ -27,6 +37,13 @@
 			<hr/>
 			<div id="output"></div>
 			<code id="mycode"></code>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-md-offset-3">
+			<h4 class="text-center">
+			Created by Bikash Gogoi and Bhuvan Agrawal as a course project for CS6843 Program Analysis in Jan 2017
+			</h4>
 		</div>
 	</div>
 </div>
