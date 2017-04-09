@@ -44,7 +44,8 @@ exports.cfg = function cfg(cmpstmt) {
                 bb = undefined;
             }
 
-            entryblock.ins.push(new node('exp',stmts[i].val.exp));
+            var exp = new node('exp',stmts[i].val.exp);
+            entryblock.ins.push(exp);
             var type = stmts[i].val.if.type;
             if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
                 var tempblock = BasicBlock();
@@ -84,6 +85,8 @@ exports.cfg = function cfg(cmpstmt) {
                 retval.entry = entryblock;
                 retval.exit = exitblock;
             }
+            exp.join = exitblock;
+            exp.type = "if-cond";
         } else {
             var entryblock = BasicBlock();
             var exitblock = BasicBlock();
@@ -100,7 +103,8 @@ exports.cfg = function cfg(cmpstmt) {
                 bb = undefined;
             }
 
-            entryblock.ins.push(new node('exp',stmts[i].val.exp));
+            var exp = new node('exp',stmts[i].val.exp);
+            entryblock.ins.push();
             var type = stmts[i].val.body.type;
             if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
                 var tempblock = BasicBlock();
@@ -122,6 +126,8 @@ exports.cfg = function cfg(cmpstmt) {
                 retval.entry = entryblock;
                 retval.exit = exitblock;
             }
+            exp.join = exitblock;
+            exp.type = "while-cond";
         }
     }
     if (bb != undefined) {
@@ -143,12 +149,11 @@ exports.printFunction = function printFunction(func) {
         str += func.proto[x].val + " ";
     }
     console.log(str);
-    // console.log(func);
     printInstruction(func.ins);
 }
 
-function print_single_inst(arg) {
-    var str = "\t";
+function print_single_inst(arg,space) {
+    var str = space;
     for (var x=0; x<arg.length; x++) {
         str += arg[x].val + " ";
     }
@@ -157,9 +162,11 @@ function print_single_inst(arg) {
 
 function printInstruction(arg) {
     var stmts;
+    var space = "";
     if (arg.type == 'cmpstmt') {
         stmts = arg.val;
         console.log('{');
+        space = "\t";
     } else {
         stmts = [arg];
     }
@@ -167,13 +174,13 @@ function printInstruction(arg) {
     for (var i=0; i<stmts.length; i++) {
         // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
-            print_single_inst(stmts[i].val);
+            print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'expstmt') {
-            print_single_inst(stmts[i].val);
+            print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'jmpstmt') {
-            print_single_inst(stmts[i].val);
+            print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'ifstmt') {
-            var str = "\tif ( ";
+            var str = "if ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
                 str += stmts[i].val.exp[x].val + " ";
             }
