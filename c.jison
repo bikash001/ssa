@@ -275,7 +275,7 @@ assignment_expression
 																		
 																	} else {
 																		$1.push(new node('op', '='));
-																		$1.push($1[0]);
+																		$1.push(new node('id', $1[0].val));
 																		$1.push(new node('op',$2.subtype));
 																	}
 																	$$ = $1.concat($3);}

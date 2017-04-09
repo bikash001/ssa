@@ -188,7 +188,7 @@ case 60:
 																		
 																	} else {
 																		$$[$0-2].push(new node('op', '='));
-																		$$[$0-2].push($$[$0-2][0]);
+																		$$[$0-2].push(new node('id', $$[$0-2][0].val));
 																		$$[$0-2].push(new node('op',$$[$0-1].subtype));
 																	}
 																	this.$ = $$[$0-2].concat($$[$0]);

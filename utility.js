@@ -1,9 +1,40 @@
-exports.cfg = function cfg(cmpstmt, keys) {
+function changeId(temp, globalKeys, keys) {
+    // if (test) {
+    //     console.log('hello');
+    //     console.log(globalKeys);
+    // }
+    if (temp.length > 2) {
+        if (temp[1].val == '=') {
+            globalKeys[temp[0].val] += 1;
+            keys[temp[0].val] = "";
+            temp[0].val += globalKeys[temp[0].val];
+            for (var x=2; x<temp.length; x++) {
+                if (temp[x].type == 'id') {
+                    // console.log(stmts[i].val[x].val, 'test');
+                    globalKeys[temp[x].val] += 1;
+                    temp[x].val += globalKeys[temp[x].val];
+                }
+            }
+        } else {
+            for (var x=0; x<temp.length; x++) {
+                if (temp[x].type == 'id') {
+                    temp[x].val += globalKeys[temp[x].val];
+                }
+            }
+        }
+    }
+    
+}
+
+exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
+    parentJoinNode = parentJoinNode || {};
+    var keyList = tempkey || {};
     var globalKeys = keys || {};
 
     var retval = {entry: {}, exit: {}};
     var bb;
     var stmts;
+    var temp;
     if (cmpstmt.type == 'cmpstmt') {
         stmts = cmpstmt.val;
         // console.log(stmts);
@@ -19,10 +50,12 @@ exports.cfg = function cfg(cmpstmt, keys) {
             }
 
             bb.ins.push(stmts[i]);
-            for (var x=0; x<stmts[i].val.length; x++) {
-                if (stmts[i].val[x].type == 'id') {
-                    globalKeys[stmts[i].val[x].val] = 0;
-                    stmts[i].val[x].val += '0';
+            temp = stmts[i].val;
+            for (var x=0; x<temp.length; x++) {
+                if (temp[x].type == 'id') {
+                    keyList[temp[x].val] = "";
+                    globalKeys[temp[x].val] = 0;
+                    temp[x].val += '0';
                 }
             }
         } else if (stmts[i].type == 'expstmt') {
@@ -30,9 +63,8 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
-            // if (stmts[i].val.length > 2) {
-            //     if (stmts[i].val)
-            // }
+            temp = stmts[i].val;
+            changeId(temp, globalKeys, keyList);
             // console.log('hello');
             // console.log(bb);
         } else if (stmts[i].type == 'jmpstmt') {
@@ -40,6 +72,7 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
+            changeId(stmts[i].val, globalKeys, keyList);
         } else if (stmts[i].type == 'ifstmt') {
             var entryblock = BasicBlock();
             var exitblock = BasicBlock();
@@ -56,16 +89,29 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 bb = undefined;
             }
 
-            var exp = new node('if-cond',stmts[i].val.exp);
+            temp = stmts[i].val;
+            // console.log(temp.exp);
+            changeId(temp.exp, globalKeys, keyList);
+            var exp = new node('if-cond',temp.exp);
             entryblock.ins.push(exp);
-            var type = stmts[i].val.if.type;
+            var type = temp.if.type;
+            var oldKey;
+            var ifkeyList = [];
+            var elkeyList = [];
             if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
                 var tempblock = BasicBlock();
-                tempblock.ins.push(stmts[i].val.if);
+                tempblock.ins.push(temp.if);
                 entryblock.succ.push(tempblock);
                 exitblock.pred.push(tempblock);
+                changeId(temp.if.val, globalKeys, ifkeyList);
+                for (var key in ifkeyList) {
+                    keyList[key] = "";
+                }
+//here we come
+
             } else{
-                var ret = cfg(stmts[i].val.if);
+                oldKey = Object.create(globalKeys);
+                var ret = cfg(stmts[i].val.if, globalKeys, );
                 ret.exit.succ.push(exitblock);
                 ret.entry.pred.push(entryblock);
                 entryblock.succ.push(ret.entry);
@@ -101,8 +147,7 @@ exports.cfg = function cfg(cmpstmt, keys) {
             stmts[i].join = exitblock;
         } else {
             var entryblock = BasicBlock();
-            var exitblock = BasicBlock();
-
+            // var exitblock = BasicBlock();
             if (bb != undefined) {
                 if (Object.keys(retval.entry).length > 0) {
                     bb.pred.push(retval.exit);
@@ -114,7 +159,6 @@ exports.cfg = function cfg(cmpstmt, keys) {
                 }
                 bb = undefined;
             }
-
             var exp = new node('while-cond',stmts[i].val.exp);
             entryblock.ins.push(exp);
             var type = stmts[i].val.body.type;
@@ -194,8 +238,8 @@ function printInstruction(arg, sp) {
     for (var i=0; i<stmts.length; i++) {
         // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
-            console.log('hey');
-            console.log(stmts[i].val);
+            // console.log('hey');
+            // console.log(stmts[i].val);
             print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'expstmt') {
             print_single_inst(stmts[i].val,space);
