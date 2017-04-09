@@ -186,7 +186,7 @@ function process_if_BB(node) {
             // console.log(id + ' => ' + backupSymbol[id]);
             phi_nodes[id].backup = backupSymbol[id];
             currentValue[id] = phi_nodes[id].lhs;
-            console.log(id + " => " + phi_nodes[id].lhs);
+            // console.log(id + " => " + phi_nodes[id].lhs);
             // console.log(phi_nodes[id]);
             phi_ins = new phi_stmt(id, phi_nodes[id]);
             // console.log(phi_ins);
@@ -245,7 +245,7 @@ function updateOps(stmt, start) {
 }
 
 function updateAssgn(stmt) {
-    console.log(stmt);
+    // console.log(stmt);
     var assgn = stmt.val[0].val;
     counter[assgn]++;
     currentValue[assgn] = counter[assgn];
