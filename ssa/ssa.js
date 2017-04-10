@@ -64,9 +64,13 @@ function process_BB(node) {
     }
 }
 
-function process_while_BB(node) {
+function process_while_BB(node, parent) {
     if(node.visited) return;
     node.visited = true;
+    node.children = [];
+    if (parent != undefined) {
+        parent.children.push(node);
+    }
     var expr = node.ins[0];
     // console.log(expr);
     var backupSymbol={};
@@ -103,7 +107,7 @@ function process_while_BB(node) {
 
     // Handle nested IF
     if (while_body.succ.length > 0 && isIfNode(while_body.succ[0])) {
-        process_if_BB(while_body.succ[0]);
+        process_if_BB(while_body.succ[0], node);
         var join_stmts = while_body.succ[0].ins[0].join.ins;
         for (var i = 0; i < join_stmts.length; i++) {
             var stmt = join_stmts[i];
@@ -123,7 +127,7 @@ function process_while_BB(node) {
 
     // Handle nested WHILE
     if (while_body.succ.length > 0 && isWhileNode(while_body.succ[0])) {
-        process_while_BB(while_body.succ[0]);
+        process_while_BB(while_body.succ[0], node);
         var join_stmts = while_body.succ[0].ins;
         for (var i = 0; i < join_stmts.length - 1; i++) {
             var stmt = join_stmts[i];
@@ -183,9 +187,13 @@ function process_while_BB(node) {
     // console.log(node.ins[0]);
 }
 
-function process_if_BB(node) {
+function process_if_BB(node, parent) {
     if (node.visited) return;
     node.visited = true;
+    node.children = [];
+    if (parent != undefined) {
+        parent.children.push(node);
+    }
     var backupSymbol={};
     for (var key in currentValue) {
         backupSymbol[key] = currentValue[key];
@@ -222,7 +230,7 @@ function process_if_BB(node) {
 
     // Handle nested IF
     if (then_node.succ.length > 0 && isIfNode(then_node.succ[0])) {
-        process_if_BB(then_node.succ[0]);
+        process_if_BB(then_node.succ[0], node);
         var join_stmts = then_node.succ[0].ins[0].join.ins;
         for (var i = 0; i < join_stmts.length; i++) {
             var stmt = join_stmts[i];
@@ -241,7 +249,7 @@ function process_if_BB(node) {
 
     // Handle nested while
     if (then_node.succ.length > 0 && isWhileNode(then_node.succ[0])) {
-        process_while_BB(then_node.succ[0]);
+        process_while_BB(then_node.succ[0], node);
         var join_stmts = then_node.succ[0].ins;
         for (var i = 0; i < join_stmts.length-1; i++) {
             var stmt = join_stmts[i];
@@ -289,7 +297,7 @@ function process_if_BB(node) {
     // Handle nested IF
     if (else_node.succ.length > 0 && isIfNode(else_node.succ[0])) {
         // console.log(else_node.succ);
-        process_if_BB(else_node.succ[0]);
+        process_if_BB(else_node.succ[0], node);
         var join_stmts = else_node.succ[0].ins[0].join.ins;
         for (var i = 0; i < join_stmts.length; i++) {
             var stmt = join_stmts[i];
@@ -303,6 +311,25 @@ function process_if_BB(node) {
             }
             var phinode = phi_nodes[assgn];
             phinode.rhs2 = currentValue[assgn];
+        }
+    }
+
+    // Handle nested while
+    if (else_node.succ.length > 0 && isWhileNode(else_node.succ[0])) {
+        process_while_BB(else_node.succ[0], node);
+        var join_stmts = else_node.succ[0].ins;
+        for (var i = 0; i < join_stmts.length-1; i++) {
+            var stmt = join_stmts[i];
+            // updateOps(stmt, 2);
+            var assgn = stmt.id;
+            var backupVal = currentValue[assgn];
+            // updateAssgn(stmt);
+            if (!phi_nodes.hasOwnProperty(assgn)) {
+                var phinode = new newPhiNode(assgn, backupVal);
+                phi_nodes[assgn] = phinode;
+            }
+            var phinode = phi_nodes[assgn];
+            phinode.rhs1 = currentValue[assgn];
         }
     }
 
