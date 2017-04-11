@@ -120,13 +120,13 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             var ifkeyList = {};
             var elkeyList = {};
             var tempKeyList = getCopy(definedKeys);
-            for (var x in keyList) {
-            	if (tempKeyList[x] == undefined) {
-            		tempKeyList[x] = keyList[x];
-            	}
+            
+            for (var x in locallyDefined) {
+            	tempKeyList[x] = locallyDefined[x];
             }
 
-            var ret = cfg(temp.if,globalKeys,locallyDefined, keyList,parentJoinNode);
+            var ret = cfg(temp.if,globalKeys,tempKeyList, keyList,parentJoinNode);
+            
             ifkeyList = ret.keys;
             ret.exit.succ.push(exitblock);
             ret.entry.pred.push(entryblock);
@@ -135,7 +135,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 
             if (Object.keys(temp.else).length > 0) {
                 type = temp.else.type;
-                var ret = cfg(temp.else,globalKeys,locallyDefined, keyList,parentJoinNode);
+                var ret = cfg(temp.else,globalKeys,tempKeyList, keyList,parentJoinNode);
                 elkeyList = ret.keys;
                 // var tempblock = BasicBlock();
                 // tempblock.ins.push(temp.if);
@@ -143,18 +143,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
                 ret.entry.pred.push(entryblock);
                 entryblock.succ.push(ret.entry);
                 exitblock.pred.push(ret.exit);
-                // if (type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
-                //     var tempblock = BasicBlock();
-                //     tempblock.ins.push(stmts[i].val.else);
-                //     entryblock.succ.push(tempblock);
-                //     exitblock.pred.push(tempblock);
-                // } else {
-                //     var ret = cfg(stmts[i].val.else);
-                //     ret.exit.succ.push(exitblock);
-                //     ret.entry.pred.push(entryblock);
-                //     entryblock.succ.push(ret.entry);
-                //     exitblock.pred.push(ret.exit);
-                // }
+
             } else {
                 exitblock.pred.push(entryblock);
                 entryblock.succ.push(exitblock);
@@ -168,11 +157,15 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+elkeyList[x]+")")]});
 				} else {
 					// console.log(2,x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+keyList[x]+")");
-					tempNode = new node('id',x+keyList[x]);
-					if (parentJoinNode[x] != undefined) {
-						parentJoinNode[x].push(tempNode);
+					if (tempKeyList[x] != undefined) {
+						tempNode = new node('id',x+tempKeyList[x]);
 					} else {
-						parentJoinNode[x] = [tempNode];
+						tempNode = new node('id',x+keyList[x]);
+						if (parentJoinNode[x] != undefined) {
+							parentJoinNode[x].push(tempNode);
+						} else {
+							parentJoinNode[x] = [tempNode];
+						}
 					}
 					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","), tempNode, new node('',")")]});
 				}
@@ -181,14 +174,20 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 			for (var x in elkeyList) {
 				if (ifkeyList[x] == undefined) {
 					globalKeys[x] += 1;
-					tempNode = new node('id',x+keyList[x]);
-					if (parentJoinNode[x] != undefined) {
-						parentJoinNode[x].push(tempNode);
+					if (tempKeyList[x] != undefined) {
+						tempNode = new node('id',x+tempKeyList[x]);
 					} else {
-						parentJoinNode[x] = [tempNode];
+						tempNode = new node('id',x+keyList[x]);
+						if (parentJoinNode[x] != undefined) {
+							parentJoinNode[x].push(tempNode);
+						} else {
+							parentJoinNode[x] = [tempNode];
+						}
 					}
+					// tempNode = new node('id',x+keyList[x]);
+					
 					// console.log(3,x+globalKeys[x]+' = Phi('+x+keyList[x]+","+x+elkeyList[x]+")");
-					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('),tempNode,new node('',","+elkeyList[x]+")")]});
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('),tempNode,new node('',","+x+elkeyList[x]+")")]});
 					locallyDefined[x] = globalKeys[x];
 				}
 			}
@@ -227,15 +226,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             	whileKeys[x] = definedKeys[x];
             }
 
-            // console.log('<---');
-            // console.log('exp',temp.exp);
-            // console.log('locl',locallyDefined);
-            // console.log('whk',whileKeys);
-            // console.log('kl',keyList);
-            // console.log('dl',definedKeys);
-            changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode, true);
-            // console.log(temp.exp);
-            // console.log('--->');
+            changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode);
             var exp = new node('while-cond',temp.exp);
             // entryblock.ins.push(exp);
             var type = temp.body.type;
