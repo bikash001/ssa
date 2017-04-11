@@ -1,3 +1,11 @@
+function getCopy(arg) {
+	var obj = {};
+	for (var x in arg) {
+		obj[x] = arg[x];
+	}
+	return obj;
+}
+
 function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) {
     if (temp.length > 2) {
         if (temp[1].val == '=') {
@@ -26,7 +34,9 @@ function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) 
             	if (temp[x].type == 'id') {
 	                if (definedKeys[temp[x].val] != undefined) {
 	                	temp[x].val += definedKeys[temp[x].val];
-	                } else {
+	                } else if (keys[temp[x].val] != undefined) {
+                    	temp[x].val += keys[temp[x].val];
+                    } else {
 	                	if (parentJoinNode[temp[x].val] != undefined) {
 	                		parentJoinNode[temp[x].val].push(temp[x]);
 	                	} else {
@@ -109,36 +119,20 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             var oldKey;
             var ifkeyList = {};
             var elkeyList = {};
-            var tempKeyList = Object.create(definedKeys);
+            var tempKeyList = getCopy(definedKeys);
             for (var x in keyList) {
             	if (tempKeyList[x] == undefined) {
             		tempKeyList[x] = keyList[x];
             	}
             }
-            // if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
-                
-                var ret = cfg(temp.if,globalKeys,locallyDefined, keyList,parentJoinNode);
-                ifkeyList = ret.keys;
-                // var tempblock = BasicBlock();
-                // tempblock.ins.push(temp.if);
-                ret.exit.succ.push(exitblock);
-                ret.entry.pred.push(entryblock);
-                entryblock.succ.push(ret.entry);
-                exitblock.pred.push(ret.exit);
-                // changeId(temp.if.val, globalKeys, ifkeyList);
-                // for (var key in ifkeyList) {
-                //     keyList[key] = "";
-                // }
-//here we come
 
-            // } else{
-            //     oldKey = Object.create(globalKeys);
-            //     var ret = cfg(stmts[i].val.if, globalKeys, );
-            //     ret.exit.succ.push(exitblock);
-            //     ret.entry.pred.push(entryblock);
-            //     entryblock.succ.push(ret.entry);
-            //     exitblock.pred.push(ret.exit);
-            // }
+            var ret = cfg(temp.if,globalKeys,locallyDefined, keyList,parentJoinNode);
+            ifkeyList = ret.keys;
+            ret.exit.succ.push(exitblock);
+            ret.entry.pred.push(entryblock);
+            entryblock.succ.push(ret.entry);
+            exitblock.pred.push(ret.exit);
+
             if (Object.keys(temp.else).length > 0) {
                 type = temp.else.type;
                 var ret = cfg(temp.else,globalKeys,locallyDefined, keyList,parentJoinNode);
@@ -226,16 +220,22 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 
             temp = stmts[i].val;
             
-            var whileKeys = Object.create(keyList);
+            var whileKeys = getCopy(keyList);
+            // console.log('copy', whileKeys);
+
             for (var x in definedKeys) {
             	whileKeys[x] = definedKeys[x];
             }
 
-            // console.log(locallyDefined);
-            // console.log(whileKeys);
+            // console.log('<---');
+            // console.log('exp',temp.exp);
+            // console.log('locl',locallyDefined);
+            // console.log('whk',whileKeys);
+            // console.log('kl',keyList);
+            // console.log('dl',definedKeys);
+            changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode, true);
             // console.log(temp.exp);
-            changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode);
-            // console.log(temp.exp);
+            // console.log('--->');
             var exp = new node('while-cond',temp.exp);
             // entryblock.ins.push(exp);
             var type = temp.body.type;
@@ -245,23 +245,9 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             	whileKeys[x] = locallyDefined[x];
             }
 
-            // console.log(whileKeys);
-            // console.log(temp.body.val[0]);
             var ret = cfg(temp.body,globalKeys,{},whileKeys,joinNode);
             var tempLocal = ret.keys;
-            // console.log(tempLocal);
-            // if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
-            //     var tempblock = BasicBlock();
-            //     tempblock.ins.push(stmts[i].val.body);
-            //     entryblock.succ.push(tempblock);
-            //     entryblock.pred.push(tempblock);
-            // } else {
-            //     var ret = cfg(stmts[i].val.body);
-            //     ret.exit.succ.push(entryblock);
-            //     ret.entry.pred.push(entryblock);
-            //     entryblock.succ.push(ret.entry);
-            //     entryblock.pred.push(ret.exit);
-            // }
+
             for (var x in tempLocal) {
             	globalKeys[x] += 1;
             	temp = new node('id',x+whileKeys[x]);
@@ -307,8 +293,6 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
                 retval.exit = entryblock;
             }
             stmts[i].join = entryblock;
-            // console.log('----------');
-            // console.log(definedKeys);
             // console.log('-----------');
         }
     }
