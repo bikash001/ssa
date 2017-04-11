@@ -109,6 +109,7 @@ break;
 case 8:
 $$[$0-3].push(new node('br','('));
 															this.$ = $$[$0-3].concat($$[$0-1]);
+															$$[$0-3][0].type = 'func';
 															this.$.push(new node('br',')'));
 break;
 case 14:
@@ -185,7 +186,6 @@ case 60:
 
 																	if ($$[$0-1].type == 'op') {
 																		$$[$0-2].push($$[$0-1]);
-																		
 																	} else {
 																		$$[$0-2].push(new node('op', '='));
 																		$$[$0-2].push(new node('id', $$[$0-2][0].val));

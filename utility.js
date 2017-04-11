@@ -1,40 +1,53 @@
-function changeId(temp, globalKeys, keys) {
-    // if (test) {
-    //     console.log('hello');
-    //     console.log(globalKeys);
-    // }
+function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) {
     if (temp.length > 2) {
         if (temp[1].val == '=') {
-            globalKeys[temp[0].val] += 1;
-            keys[temp[0].val] = "";
-            temp[0].val += globalKeys[temp[0].val];
             for (var x=2; x<temp.length; x++) {
                 if (temp[x].type == 'id') {
                     // console.log(stmts[i].val[x].val, 'test');
-                    globalKeys[temp[x].val] += 1;
-                    temp[x].val += globalKeys[temp[x].val];
+                    if (definedKeys[temp[x].val] != undefined) {
+                    	temp[x].val += definedKeys[temp[x].val];
+                    } else if (keys[temp[x].val] != undefined) {
+                    	temp[x].val += keys[temp[x].val];
+                    } else {
+                    	if (parentJoinNode[temp[x].val] != undefined) {
+                    		parentJoinNode[temp[x].val].push(temp[x]);
+                    	} else {
+                    		parentJoinNode[temp[x].val] = [temp[x]];
+                    	}
+                    	temp[x].val += keyList[temp[x].val];
+                    }
                 }
             }
+            globalKeys[temp[0].val] += 1;
+            definedKeys[temp[0].val] = globalKeys[temp[0].val];
+            temp[0].val += globalKeys[temp[0].val];
         } else {
             for (var x=0; x<temp.length; x++) {
-                if (temp[x].type == 'id') {
-                    temp[x].val += globalKeys[temp[x].val];
-                }
+            	if (temp[x].type == 'id') {
+	                if (definedKeys[temp[x].val] != undefined) {
+	                	temp[x].val += definedKeys[temp[x].val];
+	                } else {
+	                	if (parentJoinNode[temp[x].val] != undefined) {
+	                		parentJoinNode[temp[x].val].push(temp[x]);
+	                	} else {
+	                		parentJoinNode[temp[x].val] = [temp[x]];
+	                	}
+	                	temp[x].val += keyList[temp[x].val];
+	                }
+	            }
             }
         }
     }
     
 }
 
-exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
-    parentJoinNode = parentJoinNode || {};
-    var keyList = tempkey || {};
-    var globalKeys = keys || {};
-
-    var retval = {entry: {}, exit: {}};
+exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
+    var retval = {entry: {}, exit: {}, keys: {}};
+    var locallyDefined = retval.keys;
     var bb;
     var stmts;
     var temp;
+    
     if (cmpstmt.type == 'cmpstmt') {
         stmts = cmpstmt.val;
         // console.log(stmts);
@@ -53,7 +66,7 @@ exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
             temp = stmts[i].val;
             for (var x=0; x<temp.length; x++) {
                 if (temp[x].type == 'id') {
-                    keyList[temp[x].val] = "";
+                    locallyDefined[temp[x].val] = 0;
                     globalKeys[temp[x].val] = 0;
                     temp[x].val += '0';
                 }
@@ -64,15 +77,13 @@ exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
             }
             bb.ins.push(stmts[i]);
             temp = stmts[i].val;
-            changeId(temp, globalKeys, keyList);
-            // console.log('hello');
-            // console.log(bb);
+            changeId(temp, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode);
         } else if (stmts[i].type == 'jmpstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
-            changeId(stmts[i].val, globalKeys, keyList);
+            changeId(stmts[i].val, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode);
         } else if (stmts[i].type == 'ifstmt') {
             var entryblock = BasicBlock();
             var exitblock = BasicBlock();
@@ -91,50 +102,103 @@ exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
 
             temp = stmts[i].val;
             // console.log(temp.exp);
-            changeId(temp.exp, globalKeys, keyList);
+            changeId(temp.exp, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode);
             var exp = new node('if-cond',temp.exp);
             entryblock.ins.push(exp);
             var type = temp.if.type;
             var oldKey;
-            var ifkeyList = [];
-            var elkeyList = [];
-            if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
-                var tempblock = BasicBlock();
-                tempblock.ins.push(temp.if);
-                entryblock.succ.push(tempblock);
-                exitblock.pred.push(tempblock);
-                changeId(temp.if.val, globalKeys, ifkeyList);
-                for (var key in ifkeyList) {
-                    keyList[key] = "";
-                }
-//here we come
-
-            } else{
-                oldKey = Object.create(globalKeys);
-                var ret = cfg(stmts[i].val.if, globalKeys, );
+            var ifkeyList = {};
+            var elkeyList = {};
+            var tempKeyList = Object.create(definedKeys);
+            for (var x in keyList) {
+            	if (tempKeyList[x] == undefined) {
+            		tempKeyList[x] = keyList[x];
+            	}
+            }
+            // if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
+                
+                var ret = cfg(temp.if,globalKeys,locallyDefined, keyList,parentJoinNode);
+                ifkeyList = ret.keys;
+                // var tempblock = BasicBlock();
+                // tempblock.ins.push(temp.if);
                 ret.exit.succ.push(exitblock);
                 ret.entry.pred.push(entryblock);
                 entryblock.succ.push(ret.entry);
                 exitblock.pred.push(ret.exit);
-            }
-            if (Object.keys(stmts[i].val.else).length > 0) {
-                type = stmts[i].val.else.type;
-                if (type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
-                    var tempblock = BasicBlock();
-                    tempblock.ins.push(stmts[i].val.else);
-                    entryblock.succ.push(tempblock);
-                    exitblock.pred.push(tempblock);
-                } else {
-                    var ret = cfg(stmts[i].val.else);
-                    ret.exit.succ.push(exitblock);
-                    ret.entry.pred.push(entryblock);
-                    entryblock.succ.push(ret.entry);
-                    exitblock.pred.push(ret.exit);
-                }
+                // changeId(temp.if.val, globalKeys, ifkeyList);
+                // for (var key in ifkeyList) {
+                //     keyList[key] = "";
+                // }
+//here we come
+
+            // } else{
+            //     oldKey = Object.create(globalKeys);
+            //     var ret = cfg(stmts[i].val.if, globalKeys, );
+            //     ret.exit.succ.push(exitblock);
+            //     ret.entry.pred.push(entryblock);
+            //     entryblock.succ.push(ret.entry);
+            //     exitblock.pred.push(ret.exit);
+            // }
+            if (Object.keys(temp.else).length > 0) {
+                type = temp.else.type;
+                var ret = cfg(temp.else,globalKeys,locallyDefined, keyList,parentJoinNode);
+                elkeyList = ret.keys;
+                // var tempblock = BasicBlock();
+                // tempblock.ins.push(temp.if);
+                ret.exit.succ.push(exitblock);
+                ret.entry.pred.push(entryblock);
+                entryblock.succ.push(ret.entry);
+                exitblock.pred.push(ret.exit);
+                // if (type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
+                //     var tempblock = BasicBlock();
+                //     tempblock.ins.push(stmts[i].val.else);
+                //     entryblock.succ.push(tempblock);
+                //     exitblock.pred.push(tempblock);
+                // } else {
+                //     var ret = cfg(stmts[i].val.else);
+                //     ret.exit.succ.push(exitblock);
+                //     ret.entry.pred.push(entryblock);
+                //     entryblock.succ.push(ret.entry);
+                //     exitblock.pred.push(ret.exit);
+                // }
             } else {
                 exitblock.pred.push(entryblock);
                 entryblock.succ.push(exitblock);
             }
+
+            var tempNode;
+			for (var x in ifkeyList) {
+				globalKeys[x] += 1;
+				if (elkeyList[x] != undefined) {
+					// console.log(1,x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+elkeyList[x]+")");
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+elkeyList[x]+")")]});
+				} else {
+					// console.log(2,x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+keyList[x]+")");
+					tempNode = new node('id',x+keyList[x]);
+					if (parentJoinNode[x] != undefined) {
+						parentJoinNode[x].push(tempNode);
+					} else {
+						parentJoinNode[x] = [tempNode];
+					}
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","), tempNode, new node('',")")]});
+				}
+				locallyDefined[x] = globalKeys[x];
+			}
+			for (var x in elkeyList) {
+				if (ifkeyList[x] == undefined) {
+					globalKeys[x] += 1;
+					tempNode = new node('id',x+keyList[x]);
+					if (parentJoinNode[x] != undefined) {
+						parentJoinNode[x].push(tempNode);
+					} else {
+						parentJoinNode[x] = [tempNode];
+					}
+					// console.log(3,x+globalKeys[x]+' = Phi('+x+keyList[x]+","+x+elkeyList[x]+")");
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('),tempNode,new node('',","+elkeyList[x]+")")]});
+					locallyDefined[x] = globalKeys[x];
+				}
+			}
+
             if (Object.keys(retval.entry).length > 0) {
                 retval.exit.succ.push(entryblock);
                 entryblock.pred.push(retval.exit);
@@ -159,21 +223,81 @@ exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
                 }
                 bb = undefined;
             }
-            var exp = new node('while-cond',stmts[i].val.exp);
-            entryblock.ins.push(exp);
-            var type = stmts[i].val.body.type;
-            if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
-                var tempblock = BasicBlock();
-                tempblock.ins.push(stmts[i].val.body);
-                entryblock.succ.push(tempblock);
-                entryblock.pred.push(tempblock);
-            } else {
-                var ret = cfg(stmts[i].val.body);
-                ret.exit.succ.push(entryblock);
-                ret.entry.pred.push(entryblock);
-                entryblock.succ.push(ret.entry);
-                entryblock.pred.push(ret.exit);
+
+            temp = stmts[i].val;
+            
+            var whileKeys = Object.create(keyList);
+            for (var x in definedKeys) {
+            	whileKeys[x] = definedKeys[x];
             }
+
+            // console.log(locallyDefined);
+            // console.log(whileKeys);
+            // console.log(temp.exp);
+            changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode);
+            // console.log(temp.exp);
+            var exp = new node('while-cond',temp.exp);
+            // entryblock.ins.push(exp);
+            var type = temp.body.type;
+            var joinNode = {};
+
+            for (var x in locallyDefined) {
+            	whileKeys[x] = locallyDefined[x];
+            }
+
+            // console.log(whileKeys);
+            // console.log(temp.body.val[0]);
+            var ret = cfg(temp.body,globalKeys,{},whileKeys,joinNode);
+            var tempLocal = ret.keys;
+            // console.log(tempLocal);
+            // if ( type == 'expstmt' || type == 'decstmt' || type == 'jmpstmt') {
+            //     var tempblock = BasicBlock();
+            //     tempblock.ins.push(stmts[i].val.body);
+            //     entryblock.succ.push(tempblock);
+            //     entryblock.pred.push(tempblock);
+            // } else {
+            //     var ret = cfg(stmts[i].val.body);
+            //     ret.exit.succ.push(entryblock);
+            //     ret.entry.pred.push(entryblock);
+            //     entryblock.succ.push(ret.entry);
+            //     entryblock.pred.push(ret.exit);
+            // }
+            for (var x in tempLocal) {
+            	globalKeys[x] += 1;
+            	temp = new node('id',x+whileKeys[x]);
+            	entryblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+tempLocal[x]+","), temp, new node('',")")]});	
+            	locallyDefined[x] = globalKeys[x];
+            	if (parentJoinNode[x] != undefined) {
+            		parentJoinNode[x].push(temp);
+            	} else {
+            		parentJoinNode[x] = [temp];
+            	}
+            }
+            entryblock.ins.push(exp);
+            for (var x in tempLocal) {
+            	if (joinNode[x] != undefined) {
+            		for (var y=0; y<joinNode[x].length; y++) {
+            			joinNode[x][y].val = x+globalKeys[x];
+            		}
+            	}
+            }
+
+            // console.log('heyldsj');
+            // console.log(exp);
+            for (var x=0; x<exp.val.length; x++) {
+            	if (exp.val[x].type == 'id') {
+            		if (tempLocal[exp.val[x].val] != undefined) {
+            			tempLocal[exp.val[x].val] = globalKeys[exp.val[x].val];
+            		} else {
+            			if (parentJoinNode[exp.val[x].val] != undefined) {
+            				parentJoinNode[exp.val[x].val].push(exp.val[x]);
+            			} else {
+            				parentJoinNode[exp.val[x].val] = [exp.val[x]];
+            			}
+            		}
+            	}
+            }
+            
             if (Object.keys(retval.entry).length > 0) {
                 retval.exit.succ.push(entryblock);
                 entryblock.pred.push(retval.exit);
@@ -182,7 +306,10 @@ exports.cfg = function cfg(cmpstmt, keys, tempkey, parentJoinNode) {
                 retval.entry = entryblock;
                 retval.exit = entryblock;
             }
-            exp.join = entryblock;
+            stmts[i].join = entryblock;
+            // console.log('----------');
+            // console.log(definedKeys);
+            // console.log('-----------');
         }
     }
     if (bb != undefined) {
@@ -208,74 +335,84 @@ exports.printFunction = function printFunction(func) {
         str += func.proto[x].val + " ";
     }
     console.log(str);
-    printInstruction(func.ins);
+    var ret = printInstruction(func.ins);
+    console.log(ret);
 }
 
 function print_single_inst(arg,space) {
     var str = space;
     for (var x=0; x<arg.length; x++) {
-        // if (arg[x].val == undefined) {
-        //     console.log('undefined');
-        //     console.log(arg[x]);
-        //     console.log(arg);
-        // }
         str += arg[x].val + " ";
     }
-    console.log(str);
+    // console.log(str);
+    return str+'\n';
 }
 
-function printInstruction(arg, sp) {
+
+var labelCounter = 0;
+
+function printInstruction(arg, sp, jump) {
     var stmts;
+    var finalStr = "";
     var space = sp || "";
     if (arg.type == 'cmpstmt') {
         stmts = arg.val;
-        console.log(space+'{');
+        finalStr += space+"{\n";
         space += "\t";
     } else {
         stmts = [arg];
     }
-
     for (var i=0; i<stmts.length; i++) {
-        // console.log(stmts[i]);
         if (stmts[i].type == 'decstmt') {
-            // console.log('hey');
-            // console.log(stmts[i].val);
-            print_single_inst(stmts[i].val,space);
+            finalStr += print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'expstmt') {
-            print_single_inst(stmts[i].val,space);
+            finalStr += print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'jmpstmt') {
-            print_single_inst(stmts[i].val,space);
+            finalStr += print_single_inst(stmts[i].val,space);
         } else if (stmts[i].type == 'ifstmt') {
             var str = space+"if ( ";
             for (var x=0; x<stmts[i].val.exp.length; x++) {
                 str += stmts[i].val.exp[x].val + " ";
             }
             str += ")";
-            console.log(str);
-            printInstruction(stmts[i].val.if,space);
+            finalStr += str+'\n';
+            finalStr += printInstruction(stmts[i].val.if,space);
             if (Object.keys(stmts[i].val.else).length > 0) {
-                console.log(space+'else');
-                printInstruction(stmts[i].val.else,space);
+                finalStr += space+'else\n';
+                finalStr += printInstruction(stmts[i].val.else,space);
             }
             for (var x=0; x<stmts[i].join.ins.length; x++) {
-               print_single_inst(stmts[i].join.ins[x].val,space); 
+               finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
             }
-            
         } else {
-            var str = space+"while ( ";
-            for (var x=0; x<stmts[i].val.exp.length; x++) {
-                str += stmts[i].val.exp[x].val + " ";
+            var str = space;
+            labelCounter++;
+            finalStr += "loop_begin_"+labelCounter+':\n';
+            var temp = stmts[i].join.ins;
+            for (var x=0; x<temp.length-1; x++) {
+               finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
+            }
+            str += "if (";
+            for (var x=0; x<temp[temp.length-1].val.length; x++) {
+                str += temp[temp.length-1].val[x].val + " ";
             }
             str += ")";
-            console.log(str);
-            printInstruction(stmts[i].val.body,space);
+            // console.log(str);
+            // console.log(finalStr);
+            finalStr += str+'\n';
+            finalStr += printInstruction(stmts[i].val.body,space,labelCounter);
         }
     }
 
     if (arg.type == 'cmpstmt') {
         space = sp || "";
-        console.log(space+'}');
+        if (jump!=undefined) {
+            finalStr += '\t'+space+'goto loop_begin_' + jump + ';\n';
+        }
+        finalStr += space+'}\n';
     }
+    // console.log(finalStr);
+    return finalStr;
 }
 
 

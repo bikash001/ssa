@@ -144,6 +144,7 @@ postfix_expression
 									$$ = $1;}
 	| postfix_expression '(' argument_expression_list ')' 	{$1.push(new node('br','('));
 															$$ = $1.concat($3);
+															$1[0].type = 'func';
 															$$.push(new node('br',')'));}
 	| postfix_expression '.' IDENTIFIER
 	| postfix_expression PTR_OP IDENTIFIER
@@ -272,7 +273,6 @@ assignment_expression
 	| unary_expression assignment_operator assignment_expression 	{
 																	if ($2.type == 'op') {
 																		$1.push($2);
-																		
 																	} else {
 																		$1.push(new node('op', '='));
 																		$1.push(new node('id', $1[0].val));
