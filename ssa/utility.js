@@ -223,7 +223,9 @@ function printFunction(func) {
         str += func.proto[x].val + " ";
     }
     str += printInstruction(func.ins);
-    document.getElementById('mycode').innerHTML = str;
+    $("#mycode").text(str);
+    hljs.initHighlighting.called = false;
+    hljs.initHighlighting();
 }
 
 function print_single_inst(arg,space) {
