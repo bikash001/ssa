@@ -154,7 +154,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 				globalKeys[x] += 1;
 				if (elkeyList[x] != undefined) {
 					// console.log(1,x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+elkeyList[x]+")");
-					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+elkeyList[x]+")")]});
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Φ('+x+ifkeyList[x]+","+x+elkeyList[x]+")")]});
 				} else {
 					// console.log(2,x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","+x+keyList[x]+")");
 					if (tempKeyList[x] != undefined) {
@@ -167,7 +167,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 							parentJoinNode[x] = [tempNode];
 						}
 					}
-					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+ifkeyList[x]+","), tempNode, new node('',")")]});
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Φ( '+x+ifkeyList[x]+","), tempNode, new node('',")")]});
 				}
 				locallyDefined[x] = globalKeys[x];
 			}
@@ -187,7 +187,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 					// tempNode = new node('id',x+keyList[x]);
 					
 					// console.log(3,x+globalKeys[x]+' = Phi('+x+keyList[x]+","+x+elkeyList[x]+")");
-					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('),tempNode,new node('',","+x+elkeyList[x]+")")]});
+					exitblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Φ('),tempNode,new node('',","+x+elkeyList[x]+" )")]});
 					locallyDefined[x] = globalKeys[x];
 				}
 			}
@@ -226,7 +226,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             	whileKeys[x] = definedKeys[x];
             }
 
-            changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode);
+            // changeId(temp.exp, globalKeys, locallyDefined, whileKeys, {}, parentJoinNode);
             var exp = new node('while-cond',temp.exp);
             // entryblock.ins.push(exp);
             var type = temp.body.type;
@@ -242,7 +242,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             for (var x in tempLocal) {
             	globalKeys[x] += 1;
             	temp = new node('id',x+whileKeys[x]);
-            	entryblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Phi('+x+tempLocal[x]+","), temp, new node('',")")]});	
+            	entryblock.ins.push({type:'exp',val: [new node('',x+globalKeys[x]+' = Φ( '+x+tempLocal[x]+","), temp, new node('',")")]});	
             	locallyDefined[x] = globalKeys[x];
             	if (parentJoinNode[x] != undefined) {
             		parentJoinNode[x].push(temp);
@@ -255,6 +255,21 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             	if (joinNode[x] != undefined) {
             		for (var y=0; y<joinNode[x].length; y++) {
             			joinNode[x][y].val = x+globalKeys[x];
+            		}
+            	}
+            }
+            temp = stmts[i].val.exp;
+            for (var x=0; x<temp.length; x++) {
+            	if (temp[x].type == 'id') {
+            		if (tempLocal[temp[x].val] != undefined) {
+            			temp[x].val += globalKeys[temp[x].val];
+            		} else {
+            			if (parentJoinNode[temp[x].val] != undefined) {
+            				parentJoinNode[temp[x].val].push(temp[x]);
+            			} else {
+            				parentJoinNode[temp[x].val] = [temp[x]];
+            			}
+            			temp[x].val += whileKeys[temp[x].val];
             		}
             	}
             }
@@ -367,7 +382,7 @@ function printInstruction(arg, sp, jump) {
             for (var x=0; x<temp.length-1; x++) {
                finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
             }
-            str += "if (";
+            str += "if ( ";
             for (var x=0; x<temp[temp.length-1].val.length; x++) {
                 str += temp[temp.length-1].val[x].val + " ";
             }
@@ -391,26 +406,6 @@ function printInstruction(arg, sp, jump) {
 }
 
 
-// var ret = exports.parser.parse(source);
-//     // cfg(ret);
-//     var temp = ret.ins.val;
-//     for (var i=0; i<temp.length; i++) {
-//         if (temp[i].type == 'expstmt') {
-//             console.log(temp[i]);
-//         }
-//         // console.log(temp[i]);
-//         if (temp[i].type == 'ifstmt') {
-//             console.log('ifstmt');
-//             console.log(temp[i].val.exp);
-//             console.log(temp[i].val.if);
-//             console.log(temp[i].val.else);
-//         } else if (temp[i].type == 'whilestmt') {
-//             console.log('whilestmt');
-//             console.log(temp[i].val.exp);
-//             console.log(temp[i].val.body);
-//         }
-//     }
-//     return ret;
 exports.print_basic_block = function print_basic_block(entry) {
     while(!entry.seen) {
         console.log('basic block starts');
