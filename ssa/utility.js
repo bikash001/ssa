@@ -9,6 +9,7 @@ function getCopy(arg) {
 }
 
 function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) {
+    var ret = false;
     if (temp.length > 2) {
         if (temp[1].val == '=') {
             for (var x=2; x<temp.length; x++) {
@@ -31,6 +32,7 @@ function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) 
             globalKeys[temp[0].val] += 1;
             definedKeys[temp[0].val] = globalKeys[temp[0].val];
             temp[0].val += globalKeys[temp[0].val];
+            ret = true;
         } else {
             for (var x=0; x<temp.length; x++) {
             	if (temp[x].type == 'id') {
@@ -46,11 +48,12 @@ function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) 
 	                	}
 	                	temp[x].val += keyList[temp[x].val];
 	                }
+                    ret = true;
 	            }
             }
         }
     }
-    
+    return ret;    
 }
 
 function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
@@ -83,19 +86,24 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
                     temp[x].val += '0';
                 }
             }
+            print();
         } else if (stmts[i].type == 'expstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
             temp = stmts[i].val;
-            changeId(temp, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode);
+            if (changeId(temp, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode)) {
+                print();
+            }
         } else if (stmts[i].type == 'jmpstmt') {
             if (bb == undefined) {
                 bb = BasicBlock();
             }
             bb.ins.push(stmts[i]);
-            changeId(stmts[i].val, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode);
+            if (changeId(stmts[i].val, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode)) {
+                print();
+            }
         } else if (stmts[i].type == 'ifstmt') {
             var entryblock = BasicBlock();
             var exitblock = BasicBlock();
@@ -110,12 +118,14 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
                     retval.exit = bb;
                 }
                 bb = undefined;
-                print();
+                // print();
             }
 
             temp = stmts[i].val;
             // console.log(temp.exp);
-            changeId(temp.exp, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode);
+            if (changeId(temp.exp, globalKeys, locallyDefined, definedKeys, keyList, parentJoinNode)) {
+                print();
+            }
             var exp = new node('if-cond',temp.exp);
             entryblock.ins.push(exp);
             var type = temp.if.type;
@@ -135,7 +145,7 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
             ret.entry.pred.push(entryblock);
             entryblock.succ.push(ret.entry);
             exitblock.pred.push(ret.exit);
-            print();
+            // print();
 
             if (Object.keys(temp.else).length > 0) {
                 type = temp.else.type;
@@ -147,7 +157,7 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
                 ret.entry.pred.push(entryblock);
                 entryblock.succ.push(ret.entry);
                 exitblock.pred.push(ret.exit);
-                print();
+                // print();
             } else {
                 exitblock.pred.push(entryblock);
                 entryblock.succ.push(exitblock);
@@ -204,7 +214,7 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
                 retval.entry = entryblock;
                 retval.exit = exitblock;
             }
-            exp.join = exitblock;
+            // exp.join = exitblock;
             stmts[i].join = exitblock;
             print();
         } else {
@@ -220,7 +230,7 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
                     retval.exit = bb;
                 }
                 bb = undefined;
-                print();
+                // print();
             }
 
             temp = stmts[i].val;
@@ -244,7 +254,7 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
 
             var ret = cfg(temp.body,globalKeys,{},whileKeys,joinNode);
             var tempLocal = ret.keys;
-            print();
+            // print();
             for (var x in tempLocal) {
             	globalKeys[x] += 1;
             	temp = new node('id',x+whileKeys[x]);
@@ -310,7 +320,9 @@ function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
                 retval.entry = entryblock;
                 retval.exit = entryblock;
             }
-            print();
+            if (Object.keys(tempLocal).length > 0) {
+                print();
+            }
             // console.log('-----------');
         }
     }
@@ -476,10 +488,11 @@ $('#start_btn').click(function(){
     dataList = [];
     currentIndex = 0;
     labelCounter = 0;
-    rootNode = exec($('#code').val());
-    var g = cfg(rootNode.ins, {}, {}, {}, {});
-    var node = g.entry;
-    print();
+    var val = $('#code').val();
+    dataList.push(val);
+    rootNode = exec(val);
+    cfg(rootNode.ins, {}, {}, {}, {});
+    // print();
     $('#mycode').html(dataList[0]);
     highlightOutput();
 });
