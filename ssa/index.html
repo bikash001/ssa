@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8"/>
 	<title></title>
-<link rel="stylesheet" type="text/css" href="bootstrap.min.css"/>
 <script type="text/javascript" src="jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
 <script type="text/javascript" src="highlight.pack.js"></script>
 <script type="text/javascript" src="misc.js"></script>
 <link rel="stylesheet" type="text/css" href="main.css"/>
@@ -17,7 +17,7 @@
 			<h2>Single Static Assignment Generator</h2>
 		</div>
 	</div>
-	<div class="row" style="margin:0; height: 500px; width: 100%;">
+	<div class="row" style="margin:0; height: 560px; width: 100%;">
 		<div class="col-md-3 text-center" style="border: 1px solid black; height: 100%; overflow-y: auto;">
 			<h3>Instructions</h3>
 				<ul class="list-group">
@@ -40,10 +40,28 @@
 		</div>
 		<div class="col-md-5" style="border: 1px solid black; height: 100%;">
 			<h3 class="text-center">Output</h3>
-			<pre class="hljs output_code">
-				<code id="mycode">
-				</code>
-			</pre>
+			<div class="row justify-content-around text-center" style="margin: 0;">
+				<div class="btn-group" role="group">
+					<button type="button" class="btn btn-default" aria-label="Step back" id="full-left">
+						<span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>
+					</button>
+					<button type="button" class="btn btn-default" aria-label="Step back" id="left">
+						<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+					</button>
+					<button type="button" class="btn btn-default" aria-label="Step forward" id="right">
+						<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+					</button>
+					<button type="button" class="btn btn-default" aria-label="Step forward" id="full-right">
+						<span class="glyphicon glyphicon-step-forward" aria-hidden="true"></span>
+					</button>
+				</div>
+			</div>
+			<div style="height: 90%; margin-top: 5px;">
+				<pre class="hljs output_code">
+					<code id="mycode">
+					</code>
+				</pre>
+			</div>
 		</div>
 	</div>
 	<div class="row" style="margin: 5px;">
@@ -55,15 +73,15 @@
 				<code>
 int main()
 {
-	int a, b, c;
-	a = 10 + (5*2);
-	b = 5;
-	b = a * 4 / c;
-	a = a+1-b;
-	c = b-a;
-	a = c;
-	printf("%d", a + b + c);
-	return 0;
+    int a, b, c;
+    a = 10 + (5*2);
+    b = 5;
+    b = a * 4 / c;
+    a = a+1-b;
+    c = b-a;
+    a = c;
+    printf("%d", a + b + c);
+    return 0;
 }
 				</code>
 			</pre>
@@ -73,18 +91,18 @@ int main()
 				<code>
 int main()
 {
-	int a, b;
-	if (a+b &gt; 0) {
+    int a, b;
+    if (a+b &gt; 0) {
         a = a + 1;
-		if (a &lt;= b) {
-			a = a + b;
-		}
-		else {
-			a = a - b;
-		}
-	}
-	b = a + b;
-	return 0;
+        if (a &lt;= b) {
+            a = a + b;
+        }
+        else {
+            a = a - b;
+        }
+    }
+    b = a + b;
+    return 0;
 }
 				</code>
 			</pre>

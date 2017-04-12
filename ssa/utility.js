@@ -1,5 +1,5 @@
 $(document).ready(function(){
-    
+
 function getCopy(arg) {
 	var obj = {};
 	for (var x in arg) {
@@ -465,20 +465,57 @@ function exec (input) {
 }
 
 var rootNode;
-var dataList = []
+var dataList = [];
+var currentIndex = 0;
 
 function print() {
-    labelCounter = 0;
     dataList.push(printFunction(rootNode));
 }
 
-$('#start_btn').click(function(){  
+$('#start_btn').click(function(){
+    dataList = [];
+    currentIndex = 0;
+    labelCounter = 0;
     rootNode = exec($('#code').val());
     var g = cfg(rootNode.ins, {}, {}, {}, {});
     var node = g.entry;
     print();
+    $('#mycode').html(dataList[0]);
+    highlightOutput();
 });
 
+$('#full-left').click(function() {
+    currentIndex = 0;
+    $('#mycode').html(dataList[0]);
+    highlightOutput();
+});
 
+$('#full-right').click(function() {
+    currentIndex = dataList.length - 1;
+    $('#mycode').html(dataList[currentIndex]);
+    highlightOutput();
+});
+
+$('#left').click(function() {
+    if (currentIndex > 0) {
+        currentIndex -= 1;
+    }
+    $('#mycode').html(dataList[currentIndex]);
+    highlightOutput();
+});
+
+$('#right').click(function() {
+    if (currentIndex < dataList.length-1) {
+        currentIndex += 1;
+    }
+    $('#mycode').html(dataList[currentIndex]);
+    highlightOutput();
+});
+
+function highlightOutput() {
+    $('#mycode').each(function(i, block) {
+        hljs.highlightBlock(block);
+    });
+}
 
 });

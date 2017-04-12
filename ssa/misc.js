@@ -1,6 +1,7 @@
-$(function() {
-    hljs.initHighlighting.called = false;
-    hljs.initHighlightingOnLoad();
+$(function() {    
+    $('pre code').each(function(i, block) {
+        hljs.highlightBlock(block);
+    });
     $("#snippet-1").click(function() {
         $("#code").text($("#snippet-1").text())
     });
