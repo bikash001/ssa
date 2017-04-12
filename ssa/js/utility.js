@@ -372,7 +372,7 @@ function printInstruction(arg, sp, jump) {
     if (arg.type == 'cmpstmt') {
         stmts = arg.val;
         finalStr += space+"{\n";
-        space += "\t";
+        space += "    ";
     } else {
         stmts = [arg];
     }
@@ -433,7 +433,7 @@ function printInstruction(arg, sp, jump) {
     if (arg.type == 'cmpstmt') {
         space = sp || "";
         if (jump!=undefined) {
-            finalStr += '\t'+space+'goto loop_begin_' + jump + ';\n';
+            finalStr += '    '+space+'goto loop_begin_' + jump + ';\n';
         }
         finalStr += space+'}\n';
     }
@@ -488,11 +488,9 @@ $('#start_btn').click(function(){
     dataList = [];
     currentIndex = 0;
     labelCounter = 0;
-    var val = $('#code').val();
-    dataList.push(val);
-    rootNode = exec(val);
+    rootNode = exec($('#code').val());
+    print();
     cfg(rootNode.ins, {}, {}, {}, {});
-    // print();
     $('#mycode').html(dataList[0]);
     highlightOutput();
 });

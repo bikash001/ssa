@@ -2,48 +2,43 @@
 <html>
 <head>
 	<meta charset="utf-8"/>
-	<title></title>
-<script type="text/javascript" src="jquery.min.js"></script>
-<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
-<script type="text/javascript" src="highlight.pack.js"></script>
-<script type="text/javascript" src="misc.js"></script>
-<link rel="stylesheet" type="text/css" href="main.css"/>
-<link rel="stylesheet" type="text/css" href="monokai.css"/>
+	<title>SSA</title>
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+	<link rel="stylesheet" type="text/css" href="css/main.css"/>
+	<link rel="stylesheet" type="text/css" href="css/monokai.css"/>
 </head>
-<body style="position: relative; height: 100%; width: 100%;">
-<div class="container" style="position: relative; width: 100%; margin: 10px 0;">
-	<div class="row text-center bg-primary" style="margin: 0;">
+<body>
+<div class="container main_div">
+	<div class="row text-center bg-primary no-margin">
 		<div class="col-md-12">
 			<h2>Single Static Assignment Generator</h2>
 		</div>
 	</div>
-	<div class="row" style="margin:0; height: 560px; width: 100%;">
-		<div class="col-md-3 text-center" style="border: 1px solid black; height: 100%; overflow-y: auto;">
+	<div class="row code-box">
+		<div class="col-md-3 text-center instructions">
 			<h3>Instructions</h3>
 				<ul class="list-group">
-					<li class="list-group-item">Enter a valid C program with only the main() function</li>
-					<li class="list-group-item">All the variables should be declared in the beginning</li>
-					<li class="list-group-item">Only 'if' and 'while' control flow statements are allowed</li>
-					<li class="list-group-item">Arbitrary control flow like 'goto' and 'break' is not allowed</li>
-					<li class="list-group-item">There can only be a single if/while statement inside another if/while statement</li>
-					<li class="list-group-item">Conditions in if/while cannot contain assignments. For example, 'if (a = b+c) {...} is not allowed</li>
-					<li class="list-group-item">Only +,-,/,*,% operators are allowed</li>
-					<li class="list-group-item">Only scalar values are allowed. Arrays/pointers are not allowed</li>
+					<li class="list-group-item">Enter a valid C program with only the <code>main()</code> function.</li>
+					<li class="list-group-item">All the variables should be declared in the beginning.</li>
+					<li class="list-group-item">Only <code>if</code> and <code>while</code> control flow statements are allowed.</li>
+					<li class="list-group-item">Arbitrary control flow like <code>goto</code>, <code>break</code> and <code>continue</code> is not allowed.</li>
+					<li class="list-group-item">Conditions in <code>if/while</code> cannot contain assignments. For example, <code>if (a = b+c) {...}</code> is not allowed.</li>
+					<li class="list-group-item">Only scalar values are allowed. Arrays/pointers are not allowed.</li>
 				</ul>
 			<hr/>
 
 		</div>
-		<div class="col-md-4 text-center" style="border: 1px solid black; height: 100%;">
+		<div class="col-md-4 text-center input-box">
 			<h3>Input Code</h3>
-			<textarea id="code" style="width: 100%; height: 75%; font-family: monospace;"></textarea>
-			<button class="btn btn-primary" id="start_btn" style="margin: 15px;">Compute SSA</button>
+			<textarea class="text-box" id="code"></textarea>
+			<button class="btn btn-primary" id="start_btn">Compute SSA</button>
 		</div>
-		<div class="col-md-5" style="border: 1px solid black; height: 100%;">
+		<div class="col-md-5 output-box">
 			<h3 class="text-center">Output</h3>
-            <div class="progress" style="height: 5px;">
-                <div class="progress-bar" role="progressbar" style="width: 0%; height: 5px;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="mybar"></div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="mybar"></div>
             </div>
-			<div class="row justify-content-around text-center" style="margin: 0;">
+			<div class="row justify-content-around text-center no-margin">
 				<div class="btn-group" role="group">
 					<button type="button" class="btn btn-default" aria-label="Step back" id="full-left">
 						<span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>
@@ -59,7 +54,7 @@
 					</button>
 				</div>
 			</div>
-			<div style="height: 90%; margin-top: 5px;">
+			<div class="output-sub-box">
 				<pre class="hljs output_code">
 					<code id="mycode">
 					</code>
@@ -67,10 +62,10 @@
 			</div>
 		</div>
 	</div>
-	<div class="row" style="margin: 5px;">
-		<hr style="color: blue;">
+	<div class="row example">
+		<hr>
 		<h3 class="text-center">Examples</h3>
-		<p class="text-center">Click on any of the snippets below to paste the text to the input area</p>
+		<p class="text-center">Click on any of the snippets below to paste the text to the input area.</p>
 		<div class="col-md-4">
 			<pre class="hljs" id="snippet-1">
 				<code>
@@ -143,7 +138,10 @@ int main() {
 		</div>
 	</div>
 </div>
-<script type="text/javascript" src="c.js"></script> 
-<script type="text/javascript" src="utility.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/highlight.pack.js"></script>
+<script type="text/javascript" src="js/misc.js"></script>
+<script type="text/javascript" src="js/c.js"></script> 
+<script type="text/javascript" src="js/utility.js"></script>
 </body>
 </html>
