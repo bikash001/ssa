@@ -1,3 +1,5 @@
+$(document).ready(function(){
+    
 function getCopy(arg) {
 	var obj = {};
 	for (var x in arg) {
@@ -457,15 +459,11 @@ var BasicBlock = function() {
     };
 }
 
-var parser = require("./c").parser;
-var fs = require('fs');
 
 function exec (input) {
-    return parser.parse(input);
+    return c.parse(input);
 }
 
-var args = process.argv;
-var filename = args[2];
 var rootNode;
 var dataList = []
 
@@ -474,10 +472,13 @@ function print() {
     dataList.push(printFunction(rootNode));
 }
 
-fs.readFile('./'+filename, 'utf8', function(err, data) {  
-    if (err) throw err;
-    rootNode = exec(data);
+$('#start_btn').click(function(){  
+    rootNode = exec($('#code').val());
     var g = cfg(rootNode.ins, {}, {}, {}, {});
     var node = g.entry;
     print();
+});
+
+
+
 });

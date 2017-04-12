@@ -1,4 +1,4 @@
-$(function() {    
+$(function() {
     hljs.initHighlighting.called = false;
     hljs.initHighlightingOnLoad();
     $("#snippet-1").click(function() {
