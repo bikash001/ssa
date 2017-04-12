@@ -51,7 +51,7 @@ function changeId(temp, globalKeys, definedKeys, keys, keyList, parentJoinNode) 
     
 }
 
-exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
+function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoinNode) {
     var retval = {entry: {}, exit: {}, keys: {}};
     var locallyDefined = retval.keys;
     var bb;
@@ -108,6 +108,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
                     retval.exit = bb;
                 }
                 bb = undefined;
+                print();
             }
 
             temp = stmts[i].val;
@@ -132,6 +133,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             ret.entry.pred.push(entryblock);
             entryblock.succ.push(ret.entry);
             exitblock.pred.push(ret.exit);
+            print();
 
             if (Object.keys(temp.else).length > 0) {
                 type = temp.else.type;
@@ -143,7 +145,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
                 ret.entry.pred.push(entryblock);
                 entryblock.succ.push(ret.entry);
                 exitblock.pred.push(ret.exit);
-
+                print();
             } else {
                 exitblock.pred.push(entryblock);
                 entryblock.succ.push(exitblock);
@@ -202,6 +204,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             }
             exp.join = exitblock;
             stmts[i].join = exitblock;
+            print();
         } else {
             var entryblock = BasicBlock();
             // var exitblock = BasicBlock();
@@ -215,6 +218,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
                     retval.exit = bb;
                 }
                 bb = undefined;
+                print();
             }
 
             temp = stmts[i].val;
@@ -238,7 +242,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
 
             var ret = cfg(temp.body,globalKeys,{},whileKeys,joinNode);
             var tempLocal = ret.keys;
-
+            print();
             for (var x in tempLocal) {
             	globalKeys[x] += 1;
             	temp = new node('id',x+whileKeys[x]);
@@ -251,6 +255,11 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             	}
             }
             entryblock.ins.push(exp);
+            stmts[i].join = entryblock;
+            if (Object.keys(tempLocal).length > 0) {
+                print();
+            }
+
             for (var x in tempLocal) {
             	if (joinNode[x] != undefined) {
             		for (var y=0; y<joinNode[x].length; y++) {
@@ -258,6 +267,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
             		}
             	}
             }
+            
             temp = stmts[i].val.exp;
             for (var x=0; x<temp.length; x++) {
             	if (temp[x].type == 'id') {
@@ -298,7 +308,7 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
                 retval.entry = entryblock;
                 retval.exit = entryblock;
             }
-            stmts[i].join = entryblock;
+            print();
             // console.log('-----------');
         }
     }
@@ -319,14 +329,14 @@ exports.cfg = function cfg(cmpstmt, globalKeys, definedKeys, keyList, parentJoin
     return retval;
 }
 
-exports.printFunction = function printFunction(func) {
+function printFunction(func) {
     var str = "";
     for (var x=0; x<func.proto.length; x++) {
         str += func.proto[x].val + " ";
     }
-    console.log(str);
-    var ret = printInstruction(func.ins);
-    console.log(ret);
+    str += "\n";
+    str += printInstruction(func.ins);
+    return str+"\n";
 }
 
 function print_single_inst(arg,space) {
@@ -371,26 +381,38 @@ function printInstruction(arg, sp, jump) {
                 finalStr += space+'else\n';
                 finalStr += printInstruction(stmts[i].val.else,space);
             }
-            for (var x=0; x<stmts[i].join.ins.length; x++) {
-               finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
+            if (stmts[i].join != undefined) {
+                for (var x=0; x<stmts[i].join.ins.length; x++) {
+                   finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
+                }
             }
         } else {
             var str = space;
-            labelCounter++;
-            finalStr += "loop_begin_"+labelCounter+':\n';
-            var temp = stmts[i].join.ins;
-            for (var x=0; x<temp.length-1; x++) {
-               finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
+            var temp;
+            if (stmts[i].join != undefined) {
+                labelCounter++;
+                finalStr += "loop_begin_"+labelCounter+':\n';
+                temp = stmts[i].join.ins;
+                for (var x=0; x<temp.length-1; x++) {
+                   finalStr += print_single_inst(stmts[i].join.ins[x].val,space); 
+                }
+                str += "if ( ";
+                for (var x=0; x<temp[temp.length-1].val.length; x++) {
+                    str += temp[temp.length-1].val[x].val + " ";
+                }
+                str += ")";
+                finalStr += str+'\n';
+                finalStr += printInstruction(stmts[i].val.body,space,labelCounter);
+            } else {
+                temp = stmts[i].val.exp;
+                str += 'while ( ';
+                for (var x=0; x<temp.length; x++) {
+                    str += temp[x].val+' ';
+                }
+                str += ")";
+                finalStr += str+'\n';
+                finalStr += printInstruction(stmts[i].val.body,space);
             }
-            str += "if ( ";
-            for (var x=0; x<temp[temp.length-1].val.length; x++) {
-                str += temp[temp.length-1].val[x].val + " ";
-            }
-            str += ")";
-            // console.log(str);
-            // console.log(finalStr);
-            finalStr += str+'\n';
-            finalStr += printInstruction(stmts[i].val.body,space,labelCounter);
         }
     }
 
@@ -406,7 +428,7 @@ function printInstruction(arg, sp, jump) {
 }
 
 
-exports.print_basic_block = function print_basic_block(entry) {
+function print_basic_block(entry) {
     while(!entry.seen) {
         console.log('basic block starts');
         console.log(entry.ins);
@@ -426,7 +448,6 @@ var node = function(x,y) {
     this.val = y;
 }
 
-exports.node = node;
 
 var BasicBlock = function() {
     return {
@@ -435,3 +456,28 @@ var BasicBlock = function() {
         ins: []
     };
 }
+
+var parser = require("./c").parser;
+var fs = require('fs');
+
+function exec (input) {
+    return parser.parse(input);
+}
+
+var args = process.argv;
+var filename = args[2];
+var rootNode;
+var dataList = []
+
+function print() {
+    labelCounter = 0;
+    dataList.push(printFunction(rootNode));
+}
+
+fs.readFile('./'+filename, 'utf8', function(err, data) {  
+    if (err) throw err;
+    rootNode = exec(data);
+    var g = cfg(rootNode.ins, {}, {}, {}, {});
+    var node = g.entry;
+    print();
+});
