@@ -516,6 +516,14 @@ function highlightOutput() {
     $('#mycode').each(function(i, block) {
         hljs.highlightBlock(block);
     });
+    if (dataList.length == 0) {
+        $('#mybar').attr("aria-valuenow", 0);
+        $('#mybar').css("width", "0%");
+    }
+    else {
+        $('#mybar').attr("aria-valuenow", (currentIndex+1)*100/(dataList.length-1));
+        $('#mybar').css("width", (currentIndex)*100/(dataList.length-1) + "%");
+    }
 }
 
 });
