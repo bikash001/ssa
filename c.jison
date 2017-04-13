@@ -144,6 +144,7 @@ postfix_expression
 									$$ = $1;}
 	| postfix_expression '(' argument_expression_list ')' 	{$1.push(new node('br','('));
 															$$ = $1.concat($3);
+															$1[0].type = 'func';
 															$$.push(new node('br',')'));}
 	| postfix_expression '.' IDENTIFIER
 	| postfix_expression PTR_OP IDENTIFIER
@@ -272,10 +273,9 @@ assignment_expression
 	| unary_expression assignment_operator assignment_expression 	{
 																	if ($2.type == 'op') {
 																		$1.push($2);
-																		
 																	} else {
 																		$1.push(new node('op', '='));
-																		$1.push($1[0]);
+																		$1.push(new node('id', $1[0].val));
 																		$1.push(new node('op',$2.subtype));
 																	}
 																	$$ = $1.concat($3);}
@@ -471,17 +471,10 @@ statement
 	;
 
 compound_statement
-	: '{' '}' 	{$$ = new node('cmpstmt', []);}//[new node('br', '{'), new node('br', '}')]];}
-	| '{' statement_list '}' {//$$ = [new node('br', '{')].concat($2);
-								// $$.push(new node('br', '}'));
-								$$ = new node('cmpstmt', $2);}	
-	| '{' declaration_list '}' 	{//$$ = [new node('br', '{')].concat($2);
-								//$$.push(new node('br', '}'));
-								$$ = new node('cmpstmt', $2);}
-	| '{' declaration_list statement_list '}' 	{//$$ = [new node('br', '{')].concat($2);
-												//$$ = $$.concat($3);
-												//$$.push(new node('br', '}'));
-												$$ = new node('cmpstmt', $2.concat($3));}
+	: '{' '}' 	{$$ = new node('cmpstmt', []);}
+	| '{' statement_list '}' {$$ = new node('cmpstmt', $2);}	
+	| '{' declaration_list '}' 	{$$ = new node('cmpstmt', $2);}
+	| '{' declaration_list statement_list '}' 	{$$ = new node('cmpstmt', $2.concat($3));}
 	;
 
 declaration_list
@@ -504,26 +497,15 @@ expression_statement
 
 selection_statement
 	: IF '(' expression ')' statement %prec IF_WITHOUT_ELSE 	{
-		// var list = [new node('', 'if'), new node('', '(')].concat($3);
-		// 	list.push(new node('', ')'));
-		// 	$$ = list.concat($5);
 			$$ = new node('ifstmt',{'exp': $3, 'if': $5, 'else': {}});
 	}
 	| IF '(' expression ')' statement ELSE statement {
-		// var list = [new node('', 'if'), new node('', '(')].concat($3);
-		// 	list.push(new node('', ')'));
-		// 	$$ = list.concat($5);
-		// 	$$.push(new node('', 'else'));
-		// 	$$ = $$.concat($7);
 		$$ = new node('ifstmt', {'exp': $3, 'if': $5, 'else': $7});
 	}
 	;
 
 iteration_statement
 	: WHILE '(' expression ')' statement {
-		// var list = [new node('', 'while'), new node('', '(')].concat($3);
-		// 	list.push(new node('', ')'));
-		// 	$$ = list.concat($5);
 		$$ = new node('whilestmt', {'exp': $3, 'body': $5});
 	}
 	;
@@ -539,8 +521,7 @@ jump_statement
 	;
 
 translation_unit
-	: external_declaration {//sTree = $1;}
-		syntaxTree = $1;
+	: external_declaration {
 		return $1;
 		}
 	;
@@ -551,22 +532,8 @@ external_declaration
 
 function_definition
 	: declaration_specifiers declarator compound_statement {$$ = {'type': 'function', 'proto': $1.concat($2), 'ins': $3};
-		// var list = $3.val;
-		// for(var x=0; x<list.length; x++) {
-		// 	if (list[x].type == 'ifstmt') {
-		// 		console.log('--------------------');
-		// 		console.log(list[x].val.exp);
-		// 		console.log(list[x].val.if[0]);
-		// 		console.log(list[x].val.else[0]);
-		// 		console.log('xxxxxxxxxxxxxxxxxxxxxxxx');
-		// 	}
-		// 	console.log(x,list[x]);
-		// }	
 	}
 	| declarator compound_statement {$$ = {'type': 'function', 'proto': $1, 'ins': $3};}
 ;
 
 %%
-function comment(arg){
-	console.log(arg);
-}

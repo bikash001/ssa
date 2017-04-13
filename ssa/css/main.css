@@ -1,0 +1,60 @@
+.col-md-4 pre{
+	height: 350px;
+	overflow-y: auto;
+}
+
+.output_code {
+	height: 85%;
+	overflow-y: auto;
+}
+
+body {
+	 position: relative;
+	 height: 100%;
+	 width: 100%;
+	 overflow-y: auto;
+}
+
+.main_div{
+	 position: relative;
+	 width: 100%;
+	 margin: 10px 0;
+}
+
+.no-margin{
+	 margin: 0;
+}
+.overflow-auto{
+	overflow-y: auto;
+}
+.code-box{
+	 margin:0;
+	 width: 100%;
+}
+.box{
+	 border: 1px solid black;
+	 height: 560px;
+}
+.text-box{
+	 width: 100%;
+	 height: 75%;
+	 overflow-y: auto;
+	 font-family: monospace;
+}
+#start_btn{
+	 margin: 15px;
+}
+.progress{
+	 height: 5px;
+}
+.example{
+	 margin: 5px;
+}
+.output-sub-box{
+	 height: 90%;
+	 margin-top: 5px;
+}
+.progress-bar{
+	 width: 0%;
+	 height: 5px;
+}
