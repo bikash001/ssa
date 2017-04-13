@@ -10,12 +10,12 @@
 <body>
 <div class="container main_div">
 	<div class="row text-center bg-primary no-margin">
-		<div class="col-md-12">
-			<h2>Single Static Assignment Generator</h2>
+		<div class="col-md-12 ">
+			<h2>Static Single Assignment Generator</h2>
 		</div>
 	</div>
 	<div class="row code-box">
-		<div class="col-md-3 text-center instructions">
+		<div class="col-md-3 text-center box overflow-auto">
 			<h3>Instructions</h3>
 				<ul class="list-group">
 					<li class="list-group-item">Enter a valid C program with only the <code>main()</code> function.</li>
@@ -28,12 +28,12 @@
 			<hr/>
 
 		</div>
-		<div class="col-md-4 text-center input-box">
+		<div class="col-md-4 text-center box">
 			<h3>Input Code</h3>
 			<textarea class="text-box" id="code"></textarea>
 			<button class="btn btn-primary" id="start_btn">Compute SSA</button>
 		</div>
-		<div class="col-md-5 output-box">
+		<div class="col-md-5 box">
 			<h3 class="text-center">Output</h3>
             <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="mybar"></div>
@@ -67,8 +67,7 @@
 		<h3 class="text-center">Examples</h3>
 		<p class="text-center">Click on any of the snippets below to paste the text to the input area.</p>
 		<div class="col-md-4">
-			<pre class="hljs" id="snippet-1">
-				<code>
+			<pre class="hljs" id="snippet-1"><code>
 int main()
 {
     int a, b, c;
@@ -80,13 +79,10 @@ int main()
     a = c;
     printf("%d", a + b + c);
     return 0;
-}
-				</code>
-			</pre>
+}</code></pre>
 		</div>
 		<div class="col-md-4">
-			<pre class="hljs" id="snippet-2">
-				<code>
+			<pre class="hljs" id="snippet-2"><code>
 int main()
 {
     int a, b;
@@ -101,13 +97,10 @@ int main()
     }
     b = a + b;
     return 0;
-}
-				</code>
-			</pre>
+}</code></pre>
 		</div>
 		<div class="col-md-4">
-			<pre class="hljs" id="snippet-3">
-				<code>
+			<pre class="hljs" id="snippet-3"><code>
 int main() {
     int a, b, i, j;
     a = 1;
@@ -123,13 +116,11 @@ int main() {
     }
     j = a + b;
     return 0;
-}
-				</code>
-			</pre>
+}</code></pre>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-6 col-md-offset-3">
+		<div class="col-md-12 text-center">
 			<h4 class="text-center">
 			Created by Bikash Gogoi and Bhuvan Agrawal as a course project for <a href="http://www.cse.iitm.ac.in/~rupesh/teaching/pa/jan17/">CS6843</a> Program Analysis in Jan 2017
 			</h4>

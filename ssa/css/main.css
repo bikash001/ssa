@@ -12,6 +12,7 @@ body {
 	 position: relative;
 	 height: 100%;
 	 width: 100%;
+	 overflow-y: auto;
 }
 
 .main_div{
@@ -23,32 +24,25 @@ body {
 .no-margin{
 	 margin: 0;
 }
-
+.overflow-auto{
+	overflow-y: auto;
+}
 .code-box{
 	 margin:0;
-	 height: 560px;
 	 width: 100%;
 }
-.instructions{
+.box{
 	 border: 1px solid black;
-	 height: 100%;
-	 overflow-y: auto;
-}
-.input-box{
-	 border: 1px solid black;
-	 height: 100%;
+	 height: 560px;
 }
 .text-box{
 	 width: 100%;
 	 height: 75%;
+	 overflow-y: auto;
 	 font-family: monospace;
 }
 #start_btn{
 	 margin: 15px;
-}
-.output-box{
-	 border: 1px solid black;
-	 height: 100%;
 }
 .progress{
 	 height: 5px;
